@@ -241,10 +241,10 @@ export default function App() {
     // TAMBAHAN: dark:bg-slate-950 dark:text-gray-100 pada container utama
     <div className="h-screen [height:100dvh] overflow-hidden bg-gray-50 dark:bg-slate-950 flex flex-col md:flex-row font-helvetica text-gray-800 dark:text-gray-100 transition-colors duration-300">
       {/* Header Mobile */}
-      <div className="md:hidden flex items-center justify-between bg-slate-900 dark:bg-black text-white p-4 shadow-md z-20 shrink-0 transition-colors duration-300">
+      <div className="md:hidden flex items-center justify-between bg-slate-900 dark:bg-black text-white p-4 pr-20 shadow-md z-20 shrink-0 transition-colors duration-300">
         <div className="flex items-center gap-2">
           <Package className="text-blue-400" size={24} />
-          <h1 className="text-lg font-bold tracking-wider">Stock Sperepart</h1>
+          <h1 className="text-lg font-bold tracking-wider">Adinda Cell</h1>
         </div>
         <div className="flex items-center gap-4">
           {/* Tombol Toggle Tema Mobile */}
@@ -254,18 +254,20 @@ export default function App() {
           >
             {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
           </button>
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-1 text-slate-300 hover:text-white transition-colors"
-          >
-            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
         </div>
       </div>
 
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="fixed right-4 top-4 z-[10000000] p-1 text-slate-300 hover:text-white transition-colors md:hidden"
+        aria-label={isMobileMenuOpen ? "Tutup menu" : "Buka menu"}
+      >
+        {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+      </button>
+
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-30 md:hidden"
+          className="fixed inset-0 bg-black/60 z-[9999998] md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -273,7 +275,7 @@ export default function App() {
       {/* Sidebar Navigasi */}
       <aside
         className={`
-        fixed inset-y-0 left-0 z-9999999 md:z-10 w-64 bg-slate-900 dark:bg-black text-white shadow-2xl flex flex-col 
+        fixed inset-y-0 left-0 z-[9999999] md:z-10 w-64 bg-slate-900 dark:bg-black text-white shadow-2xl flex flex-col 
         transform transition-transform duration-300 ease-in-out
         md:relative md:translate-x-0 md:shadow-xl  border-transparent dark:border-slate-800
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}

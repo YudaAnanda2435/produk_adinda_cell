@@ -280,7 +280,7 @@ const [uangDiterima, setUangDiterima] = useState("");
             className="bg-white p-6 rounded-2xl w-80 shadow-2xl print:shadow-none animate-in zoom-in-95 duration-200"
           >
             <div className="text-center mb-4 border-b pb-4 border-dashed border-gray-300">
-              <h2 className="text-xl font-black text-gray-800">Stock SPerepart</h2>
+              <h2 className="text-xl font-black text-gray-800">Adinda Cell</h2>
               <p className="text-xs text-gray-500">
                 Pusat Sparepart & Servis HP
               </p>

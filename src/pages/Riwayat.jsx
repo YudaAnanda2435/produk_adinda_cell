@@ -238,10 +238,13 @@ export default function Riwayat({
           }
           #laporan-cetak {
             width: 100% !important;
+            height: auto !important;
+            max-height: none !important;
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;
             box-shadow: none !important;
+            overflow: visible !important;
           }
           thead {
             display: table-header-group !important;
@@ -279,51 +282,59 @@ export default function Riwayat({
             </button>
 
             {isDateOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-3">
-                    <h3 className="font-bold text-gray-800">Filter Riwayat</h3>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
-                        Mulai
-                      </label>
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => {
-                          setStartDate(e.target.value);
-                          setVisibleCount(50);
-                        }}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
-                      />
+              <>
+                <button
+                  type="button"
+                  aria-label="Tutup filter tanggal"
+                  className="fixed inset-0 z-40 cursor-default bg-transparent"
+                  onClick={() => setIsDateOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b pb-3">
+                      <h3 className="font-bold text-gray-800">Filter Riwayat</h3>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
-                        Selesai
-                      </label>
-                      <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => {
-                          setEndDate(e.target.value);
-                          setVisibleCount(50);
-                        }}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
-                      />
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
+                          Mulai
+                        </label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => {
+                            setStartDate(e.target.value);
+                            setVisibleCount(50);
+                          }}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
+                          Selesai
+                        </label>
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => {
+                            setEndDate(e.target.value);
+                            setVisibleCount(50);
+                          }}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
+                        />
+                      </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        setIsDateOpen(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
+                    >
+                      Terapkan
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      setIsDateOpen(false);
-                    }}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
-                  >
-                    Terapkan
-                  </button>
                 </div>
-              </div>
+              </>
             )}
 
             <div className="relative w-full md:w-fit flex-1 md:flex-none">
@@ -373,7 +384,7 @@ export default function Riwayat({
 
         <div
           id="laporan-cetak"
-          className="bg-white overflow-y-auto no-scrollbar rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          className="flex min-h-[58dvh] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-borderDark dark:bg-darkMode md:min-h-0"
         >
           <div className="hidden print:block p-6 border-b border-gray-200 mb-4">
             <h1 className="text-2xl font-black text-gray-800 text-center">
@@ -384,9 +395,9 @@ export default function Riwayat({
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="min-h-0 flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
             <table className="w-full text-left dark:bg-cardDark border-collapse whitespace-nowrap print:whitespace-normal print:text-[10px]">
-              <thead className="bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-fontDark text-[10px] uppercase font-bold">
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-fontDark text-[10px] uppercase font-bold shadow-sm">
                 <tr>
                   <th className="p-4 border-b text-start">Waktu</th>
                   <th className="p-4 border-b text-start">Produk</th>
@@ -467,7 +478,7 @@ export default function Riwayat({
               </tbody>
 
               {filteredTransactions.length > 0 && (
-                <tfoot className="bg-blue-50/50 dark:bg-darkMode border-t-2 border-gray-200">
+                <tfoot className="sticky bottom-0 z-10 bg-blue-50 dark:bg-darkMode border-t-2 border-gray-200 shadow-[0_-6px_16px_rgba(15,23,42,0.06)]">
                   <tr>
                     <td
                       colSpan="3"

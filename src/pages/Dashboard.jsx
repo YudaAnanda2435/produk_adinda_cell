@@ -248,47 +248,55 @@ const [endDate, setEndDate] = useState(() => {
           </button>
 
           {isDateOpen && (
-            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-darkMode border border-gray-200 rounded-2xl shadow-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-3">
-                  <h3 className="font-bold text-gray-800 dark:text-fontDark">
-                    Pilih Rentang Waktu
-                  </h3>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
-                      Tanggal Mulai
-                    </label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
-                    />
+            <>
+              <button
+                type="button"
+                aria-label="Tutup filter tanggal"
+                className="fixed inset-0 z-40 cursor-default bg-transparent"
+                onClick={() => setIsDateOpen(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-darkMode border border-gray-200 rounded-2xl shadow-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <h3 className="font-bold text-gray-800 dark:text-fontDark">
+                      Pilih Rentang Waktu
+                    </h3>
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
-                      Tanggal Selesai
-                    </label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
-                    />
-                  </div>
-                </div>
 
-                <button
-                  onClick={() => setIsDateOpen(false)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
-                >
-                  Terapkan Filter
-                </button>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
+                        Tanggal Mulai
+                      </label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
+                        Tanggal Selesai
+                      </label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setIsDateOpen(false)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
+                  >
+                    Terapkan Filter
+                  </button>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -409,7 +417,7 @@ const [endDate, setEndDate] = useState(() => {
                       if (value === 0) return "0";
                       if (value >= 1000000) return `${value / 1000000} Jt`;
                       if (value >= 1000) return `${value / 1000} Rb`;
-                      return value;
+                      return String(value);
                     },
                   },
                 ]}

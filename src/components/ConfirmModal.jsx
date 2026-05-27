@@ -34,7 +34,7 @@ export default function ConfirmModal({
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open} onClose={handleClose} sx={{ zIndex: 10000001 }}>
       <ModalDialog
         variant="outlined"
         role="alertdialog"

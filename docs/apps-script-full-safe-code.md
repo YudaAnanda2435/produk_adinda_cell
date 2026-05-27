@@ -17,6 +17,17 @@ Kode di bawah mempertahankan pola kode lama yang sudah aman, lalu menambahkan:
 - `refresh` query untuk melewati cache saat frontend butuh data paling baru
 - `delete_all_transactions` hanya menghapus riwayat transaksi dan tidak mengembalikan stok produk
 - clear cache setelah create/update/delete/checkout/delete_transaction/delete_all_transactions
+- modul `service_transactions` untuk laporan jasa service yang terpisah dari transaksi penjualan stok
+
+## Sheet Service
+
+Buat sheet baru bernama `service_transactions`. Jangan digabung dengan sheet `transaksi`, karena transaksi penjualan punya efek stok, sedangkan transaksi service hanya untuk laporan jasa.
+
+Header baris pertama:
+
+```txt
+id | pelanggan | no_hp | perangkat | keluhan | modal_sparepart | modal_pengerjaan | total_modal | catatan_modal | harga_jasa | laba | metode_pembayaran | catatan | tanggal
+```
 
 ## Kode Lengkap
 
@@ -60,7 +71,8 @@ function clearDataCache_() {
     CacheService.getScriptCache().removeAll([
       "products",
       "transactions:all",
-      "dashboard:all"
+      "dashboard:all",
+      "service_transactions:all"
     ]);
   } catch (err) {}
 }
@@ -94,6 +106,15 @@ function getProducts_() {
 function getTransactions_(startDate, endDate) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var rows = sheetToObjects_(ss.getSheetByName("transaksi"));
+  return filterTransactionsByDate_(rows, startDate, endDate);
+}
+
+function getServiceTransactions_(startDate, endDate) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("service_transactions");
+  if (!sheet) return [];
+
+  var rows = sheetToObjects_(sheet);
   return filterTransactionsByDate_(rows, startDate, endDate);
 }
 
@@ -220,6 +241,19 @@ function doGet(e) {
         "transactions:" + (params.startDate || "") + ":" + (params.endDate || ""),
         function () {
           return getTransactions_(params.startDate, params.endDate);
+        }
+      ));
+    }
+
+    if (params.sheet === "service_transactions") {
+      if (params.refresh) {
+        return json_(getServiceTransactions_(params.startDate, params.endDate));
+      }
+
+      return json_(getCachedJson_(
+        "service_transactions:" + (params.startDate || "") + ":" + (params.endDate || ""),
+        function () {
+          return getServiceTransactions_(params.startDate, params.endDate);
         }
       ));
     }
@@ -415,6 +449,114 @@ function doPost(e) {
       }
       clearDataCache_();
       return json_({ status: "success" });
+    }
+
+    else if (action === "create_service_transaction") {
+      var sheetServiceCreate = ss.getSheetByName("service_transactions");
+      if (!sheetServiceCreate) {
+        sheetServiceCreate = ss.insertSheet("service_transactions");
+        sheetServiceCreate.appendRow([
+          "id",
+          "pelanggan",
+          "no_hp",
+          "perangkat",
+          "keluhan",
+          "modal_sparepart",
+          "modal_pengerjaan",
+          "total_modal",
+          "catatan_modal",
+          "harga_jasa",
+          "laba",
+          "metode_pembayaran",
+          "catatan",
+          "tanggal"
+        ]);
+      }
+
+      var serviceModalSparepart = Number(data.modal_sparepart) || 0;
+      var serviceModalPengerjaan = Number(data.modal_pengerjaan) || 0;
+      var serviceTotalModal = Number(data.total_modal) || serviceModalSparepart + serviceModalPengerjaan;
+      var serviceHargaJasa = Number(data.harga_jasa) || 0;
+      var serviceLaba = Number(data.laba) || serviceHargaJasa - serviceTotalModal;
+
+      sheetServiceCreate.appendRow([
+        "SRV-" + new Date().getTime(),
+        data.pelanggan || "-",
+        data.no_hp || "-",
+        data.perangkat || "-",
+        data.keluhan || "-",
+        serviceModalSparepart,
+        serviceModalPengerjaan,
+        serviceTotalModal,
+        data.catatan_modal || "-",
+        serviceHargaJasa,
+        serviceLaba,
+        data.metode_pembayaran || "-",
+        data.catatan || "-",
+        new Date().toISOString()
+      ]);
+
+      clearDataCache_();
+      return json_({ status: "success" });
+    }
+
+    else if (action === "delete_service_transaction") {
+      var sheetServiceDel = ss.getSheetByName("service_transactions");
+      if (!sheetServiceDel) return json_({ status: "success" });
+
+      var serviceValuesDel = sheetServiceDel.getDataRange().getValues();
+      for (var i = 1; i < serviceValuesDel.length; i++) {
+        if (String(serviceValuesDel[i][0]) === String(data.id)) {
+          sheetServiceDel.deleteRow(i + 1);
+          break;
+        }
+      }
+
+      clearDataCache_();
+      return json_({ status: "success" });
+    }
+
+    else if (action === "delete_all_service_transactions") {
+      var serviceStartDate = data.startDate;
+      var serviceEndDate = data.endDate;
+      var sheetServiceBulk = ss.getSheetByName("service_transactions");
+      if (!sheetServiceBulk) {
+        return json_({ status: "success", deletedCount: 0 });
+      }
+
+      var serviceValuesBulk = sheetServiceBulk.getDataRange().getValues();
+      var serviceRowsToDelete = [];
+
+      for (var i = 1; i < serviceValuesBulk.length; i++) {
+        var serviceDate = new Date(serviceValuesBulk[i][13]);
+        var shouldDeleteService = true;
+
+        if (serviceStartDate && serviceEndDate) {
+          var serviceStart = new Date(serviceStartDate);
+          serviceStart.setHours(0, 0, 0, 0);
+
+          var serviceEnd = new Date(serviceEndDate);
+          serviceEnd.setHours(23, 59, 59, 999);
+
+          var serviceTime = serviceDate.getTime();
+          shouldDeleteService =
+            serviceTime >= serviceStart.getTime() &&
+            serviceTime <= serviceEnd.getTime();
+        }
+
+        if (!shouldDeleteService) continue;
+        serviceRowsToDelete.push(i + 1);
+      }
+
+      for (var k = serviceRowsToDelete.length - 1; k >= 0; k--) {
+        sheetServiceBulk.deleteRow(serviceRowsToDelete[k]);
+      }
+
+      clearDataCache_();
+      return json_({
+        status: "success",
+        deletedCount: serviceRowsToDelete.length
+      });
     }
 
     else {

@@ -40,7 +40,7 @@ const defaultProductFormData = {
 };
 
 const ProductTable = ({ products, onEdit, onDelete }) => (
-  <div className="bg-white dark:bg-cardDark rounded-xl shadow-sm border border-gray-100 dark:border-borderDark  flex-1 min-h-0 flex flex-col overflow-hidden">
+  <div className="bg-white dark:bg-cardDark rounded-xl shadow-sm border border-gray-100 dark:border-borderDark flex-1 min-h-[58dvh] md:min-h-0 flex flex-col overflow-hidden">
     <div className="overflow-y-auto flex-1 no-scrollbar">
       <table className="w-full text-left whitespace-nowrap relative">
         <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10 shadow-sm border-b border-gray-200 outline outline-1 outline-gray-200">
@@ -212,6 +212,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
               <option value="">Pilih Jenis...</option>
               <option value="LCD">LCD</option>
               <option value="Baterai">Baterai</option>
+              <option value="Baterai B+">Baterai B+</option>
               <option value="Back Glass">Back Glass</option>
               <option value="Flexi On Off">Flexi On Off</option>
               <option value="Flexi Board Cas">Flexi Board Cas</option>
@@ -481,6 +482,7 @@ export default function Products({
             <option value="">Semua Kategori Sparepart</option>
             <option value="LCD">LCD</option>
             <option value="Baterai">Baterai</option>
+            <option value="Baterai B+">Baterai B+</option>
             <option value="Back Glass">Back Glass</option>
             <option value="Flexi On Off">Flexi On Off</option>
             <option value="Flexi Board Cas">Flexi Board Cas</option>

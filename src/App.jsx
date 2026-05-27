@@ -9,6 +9,10 @@ import {
   Menu,
   X,
   MessageCircle,
+  ChevronDown,
+  BarChart3,
+  ClipboardList,
+  Wrench,
   Moon, // Import icon Moon
   Sun, // Import icon Sun
 } from "lucide-react";
@@ -21,6 +25,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Products = lazy(() => import("./pages/Products"));
 const Kasir = lazy(() => import("./pages/Kasir"));
 const Riwayat = lazy(() => import("./pages/Riwayat"));
+const ServiceDashboard = lazy(() => import("./pages/ServiceDashboard"));
+const ServiceTransaction = lazy(() => import("./pages/ServiceTransaction"));
+const ServiceHistory = lazy(() => import("./pages/ServiceHistory"));
 const AiAssistant = lazy(() => import("./components/AiAssistant"));
 
 const isSameTransaction = (a, b) =>
@@ -59,10 +66,14 @@ export default function App() {
   const [, setLocalTransactions] = useState([]);
   const localTransactionsRef = useRef([]);
   const [transactionsRefreshKey, setTransactionsRefreshKey] = useState(0);
+  const [serviceTransactions, setServiceTransactions] = useState([]);
+  const [serviceRefreshKey, setServiceRefreshKey] = useState(0);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
+  const [isServiceLoading, setIsServiceLoading] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
   const [shouldLoadAiAssistant, setShouldLoadAiAssistant] = useState(false);
 
   // --- TAMBAHAN: STATE UNTUK DARK MODE ---
@@ -171,10 +182,54 @@ export default function App() {
     });
   }, []);
 
+  const fetchServiceTransactions = useCallback(async ({
+    isSilent = false,
+    startDate,
+    endDate,
+    refreshKey,
+  } = {}) => {
+    if (!isSilent) setIsServiceLoading(true);
+    try {
+      const serviceData = await api.getServiceTransactions({
+        startDate,
+        endDate,
+        refreshKey,
+      });
+      setServiceTransactions(serviceData || []);
+    } catch (error) {
+      console.error("Gagal sinkronisasi data service:", error);
+    } finally {
+      if (!isSilent) setIsServiceLoading(false);
+    }
+  }, []);
+
+  const handleServiceSaved = useCallback((serviceTransaction) => {
+    const now = new Date();
+    const localService = {
+      id: `LOCAL-SERVICE-${now.getTime()}`,
+      tanggal: now.toISOString(),
+      ...serviceTransaction,
+    };
+
+    setServiceTransactions((currentTransactions) => [
+      localService,
+      ...currentTransactions,
+    ]);
+    setServiceRefreshKey(now.getTime());
+  }, []);
+
+  const handleSetServiceTransactions = useCallback((nextTransactions) => {
+    setServiceTransactions(nextTransactions);
+  }, []);
+
   const handleClearTransactions = useCallback(() => {
     setTransactions([]);
     localTransactionsRef.current = [];
     setLocalTransactions([]);
+  }, []);
+
+  const handleClearServiceTransactions = useCallback(() => {
+    setServiceTransactions([]);
   }, []);
 
   useEffect(() => {
@@ -221,6 +276,7 @@ export default function App() {
     setUserName("");
     setProducts([]);
     handleClearTransactions();
+    handleClearServiceTransactions();
 
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userRole");
@@ -231,6 +287,8 @@ export default function App() {
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
   };
+
+  const serviceMenuIsActive = activeTab.startsWith("service-");
 
   if (!isLoggedIn) {
     return <Login onLoginSuccess={handleLogin} />;
@@ -419,6 +477,79 @@ export default function App() {
                   <Database size={20} className="mr-3" /> Data Stok Produk
                 </span>
               </button>
+              <div>
+                <button
+                  onClick={() => setIsServiceMenuOpen((isOpen) => !isOpen)}
+                  className={`group relative w-full flex items-center justify-between cursor-pointer px-4 py-3 transition-colors duration-300 ${
+                    serviceMenuIsActive
+                      ? "text-darkMode dark:text-fontDark"
+                      : "text-slate-400"
+                  }`}
+                >
+                  {!serviceMenuIsActive && (
+                    <div className="absolute inset-y-1 left-2 right-6 rounded-full opacity-0 group-hover:opacity-100 bg-slate-800/20 dark:bg-slate-700/40 transition-opacity duration-300" />
+                  )}
+
+                  {serviceMenuIsActive && (
+                    <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
+                  )}
+
+                  <span
+                    className={`relative z-10 flex items-center transition-all duration-300 ${
+                      serviceMenuIsActive ? "text-[18px]" : "text-[14px]"
+                    }`}
+                  >
+                    <Wrench size={20} className="mr-3" /> Service
+                  </span>
+                  <ChevronDown
+                    size={18}
+                    className={`relative z-10 mr-5 transition-transform duration-300 ${
+                      isServiceMenuOpen || serviceMenuIsActive
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </button>
+
+                {(isServiceMenuOpen || serviceMenuIsActive) && (
+                  <div className="mr-4 ml-8 mt-4 space-y-1">
+                    {userRole === "admin" && (
+                      <button
+                        onClick={() => handleNavigation("service-dashboard")}
+                        className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors ${
+                          activeTab === "service-dashboard"
+                            ? "bg-blue-500/15 text-blue-300"
+                            : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                        }`}
+                      >
+                        <BarChart3 size={16} /> Dashboard
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleNavigation("service-transaction")}
+                      className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors ${
+                        activeTab === "service-transaction"
+                          ? "bg-blue-500/15 text-blue-300"
+                          : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                      }`}
+                    >
+                      <Wrench size={16} /> Transaksi
+                    </button>
+                    {userRole === "admin" && (
+                      <button
+                        onClick={() => handleNavigation("service-history")}
+                        className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors ${
+                          activeTab === "service-history"
+                            ? "bg-blue-500/15 text-blue-300"
+                            : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                        }`}
+                      >
+                        <ClipboardList size={16} /> Riwayat
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           )}
         </nav>
@@ -462,16 +593,39 @@ export default function App() {
                 isLoading={isProductsLoading}
               />
             )}
-            {activeTab === "dashboard" && userRole === "admin" && (
-              isProductsLoading ? (
+            {activeTab === "service-dashboard" && userRole === "admin" && (
+              <ServiceDashboard
+                serviceTransactions={serviceTransactions}
+                fetchServiceTransactions={fetchServiceTransactions}
+                refreshKey={serviceRefreshKey}
+                isLoading={isServiceLoading}
+              />
+            )}
+            {activeTab === "service-transaction" && (
+              <ServiceTransaction
+                onServiceSaved={handleServiceSaved}
+                fetchServiceTransactions={fetchServiceTransactions}
+              />
+            )}
+            {activeTab === "service-history" && userRole === "admin" && (
+              <ServiceHistory
+                serviceTransactions={serviceTransactions}
+                setServiceTransactions={handleSetServiceTransactions}
+                fetchServiceTransactions={fetchServiceTransactions}
+                refreshKey={serviceRefreshKey}
+                isLoading={isServiceLoading}
+              />
+            )}
+            {activeTab === "dashboard" &&
+              userRole === "admin" &&
+              (isProductsLoading ? (
                 <DashboardSkeleton />
               ) : (
                 <Dashboard
                   products={products}
                   dataVersion={transactionsRefreshKey}
                 />
-              )
-            )}
+              ))}
             {activeTab === "riwayat" && userRole === "admin" && (
               <Riwayat
                 transactions={transactions}
@@ -482,8 +636,9 @@ export default function App() {
                 isLoading={isTransactionsLoading}
               />
             )}
-            {activeTab === "products" && userRole === "admin" && (
-              isProductsLoading ? (
+            {activeTab === "products" &&
+              userRole === "admin" &&
+              (isProductsLoading ? (
                 <TableSkeleton />
               ) : (
                 <Products
@@ -491,8 +646,7 @@ export default function App() {
                   fetchProducts={fetchProducts}
                   setProducts={setProducts}
                 />
-              )
-            )}
+              ))}
           </>
         </Suspense>
       </main>

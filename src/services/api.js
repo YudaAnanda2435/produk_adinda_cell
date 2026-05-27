@@ -1,5 +1,6 @@
 export const API_URL =
-  "https://script.google.com/macros/s/AKfycbwqxg4GnOmg7n1z1-00PtCPQYM9T68QpiwSY8dyjDxwnFp41RhUTxp1_JZNtAAtvbiy/exec";
+  "https://script.google.com/macros/s/AKfycbxF8Ta5nszHKeWOvuYJUt10i5nG6wLgYZa98hBBxn0GwJ0rZLd2FNvudsIqDl-kCEYY/exec";
+  // "https://script.google.com/macros/s/AKfycbwqxg4GnOmg7n1z1-00PtCPQYM9T68QpiwSY8dyjDxwnFp41RhUTxp1_JZNtAAtvbiy/exec";
 
 // "https://script.google.com/macros/s/AKfycbxHQ_T4DJulSvfZ1lifki19J_0AZvYhtyj2zydNlJXcG3Xw2S7YUPPatXA9AmDNGSrqyw/exec";
 
@@ -188,6 +189,28 @@ export const getTransactions = async ({
   }
 };
 
+export const getServiceTransactions = async ({
+  startDate,
+  endDate,
+  refreshKey,
+} = {}) => {
+  try {
+    const response = await fetch(
+      buildUrl({
+        sheet: "service_transactions",
+        startDate,
+        endDate,
+        refresh: refreshKey,
+      }),
+      { cache: "no-store" },
+    );
+    return normalizeArrayResponse(await response.json());
+  } catch (error) {
+    console.error("Gagal mengambil data service", error);
+    return [];
+  }
+};
+
 export const getDashboardSummary = async ({
   startDate,
   endDate,
@@ -223,3 +246,9 @@ export const deleteTransaction = (id) =>
   sendPostRequest("delete_transaction", { id });
 export const deleteAllTransactions = (data) =>
   sendPostRequest("delete_all_transactions", data);
+export const addServiceTransaction = (data) =>
+  sendPostRequest("create_service_transaction", data);
+export const deleteServiceTransaction = (id) =>
+  sendPostRequest("delete_service_transaction", { id });
+export const deleteAllServiceTransactions = (data) =>
+  sendPostRequest("delete_all_service_transactions", data);

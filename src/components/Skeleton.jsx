@@ -1,5 +1,7 @@
 import Skeleton from "@mui/joy/Skeleton";
 
+const tableHeaderWidths = [72, 96, 84, 100, 78, 92];
+
 export const DashboardSkeleton = () => (
   <div className="space-y-6 w-full animate-pulse">
     {/* Header Skeleton */}
@@ -70,11 +72,11 @@ export const TableSkeleton = () => (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header Tabel */}
       <div className="bg-gray-50 border-b border-gray-100 p-4 flex gap-4">
-        {[1, 2, 3, 4, 5, 6].map((col) => (
+        {tableHeaderWidths.map((width, index) => (
           <Skeleton
-            key={col}
+            key={index}
             variant="text"
-            width={`${Math.floor(Math.random() * 40) + 60}px`}
+            width={width}
             height={16}
           />
         ))}

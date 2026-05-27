@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { Suspense, lazy, useCallback, useRef, useState, useEffect } from "react";
 import {
   Package,
   LayoutDashboard,
@@ -8,22 +8,36 @@ import {
   LogOut,
   Menu,
   X,
+  MessageCircle,
   Moon, // Import icon Moon
   Sun, // Import icon Sun
 } from "lucide-react";
-import AOS from "aos"
-import { motion } from "framer-motion";
-import "aos/dist/aos.css";
 import { DashboardSkeleton, TableSkeleton } from "./components/Skeleton";
 import ConfirmModal from "./components/ConfirmModal";
-import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
-import Kasir from "./pages/Kasir";
-import Riwayat from "./pages/Riwayat";
 import Login from "./pages/Login";
 import * as api from "./services/api";
-import { duration } from "@mui/material";
-import AiAssistant from "./components/AiAssistant";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Products = lazy(() => import("./pages/Products"));
+const Kasir = lazy(() => import("./pages/Kasir"));
+const Riwayat = lazy(() => import("./pages/Riwayat"));
+const AiAssistant = lazy(() => import("./components/AiAssistant"));
+
+const isSameTransaction = (a, b) =>
+  String(a.nama_produk || "") === String(b.nama_produk || "") &&
+  Number(a.jumlah || 0) === Number(b.jumlah || 0) &&
+  Number(a.total_harga || 0) === Number(b.total_harga || 0) &&
+  Number(a.laba || 0) === Number(b.laba || 0) &&
+  String(a.metode_pembayaran || "") === String(b.metode_pembayaran || "");
+
+const mergeLocalTransactions = (serverTransactions, localTransactions) => {
+  const serverData = serverTransactions || [];
+  const pendingLocal = localTransactions.filter(
+    (local) => !serverData.some((server) => isSameTransaction(server, local)),
+  );
+
+  return [...pendingLocal, ...serverData];
+};
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -42,9 +56,14 @@ export default function App() {
 
   const [products, setProducts] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setLocalTransactions] = useState([]);
+  const localTransactionsRef = useRef([]);
+  const [transactionsRefreshKey, setTransactionsRefreshKey] = useState(0);
+  const [isProductsLoading, setIsProductsLoading] = useState(false);
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [shouldLoadAiAssistant, setShouldLoadAiAssistant] = useState(false);
 
   // --- TAMBAHAN: STATE UNTUK DARK MODE ---
   const [isDarkMode, setIsDarkMode] = useState(
@@ -63,33 +82,125 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  const fetchData = async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true);
+  const fetchProducts = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsProductsLoading(true);
     try {
-      const [prodData, transData] = await Promise.all([
-        api.getProducts(),
-        api.getTransactions(),
-      ]);
+      const prodData = await api.getProducts();
       setProducts(prodData ? [...prodData].reverse() : []);
-      setTransactions(transData || []);
     } catch (error) {
-      console.error("Gagal sinkronisasi data:", error);
+      console.error("Gagal sinkronisasi data produk:", error);
     } finally {
-      if (!isSilent) setIsLoading(false);
+      if (!isSilent) setIsProductsLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    if (isLoggedIn) fetchData();
-  }, [isLoggedIn]);
+  const fetchTransactions = useCallback(async ({
+    isSilent = false,
+    startDate,
+    endDate,
+    refreshKey,
+  } = {}) => {
+    if (!isSilent) setIsTransactionsLoading(true);
+    try {
+      const transData = await api.getTransactions({
+        startDate,
+        endDate,
+        refreshKey,
+      });
+      const serverTransactions = transData || [];
+      setTransactions(
+        mergeLocalTransactions(
+          serverTransactions,
+          localTransactionsRef.current,
+        ),
+      );
+      setLocalTransactions((currentLocalTransactions) =>
+        {
+          const nextLocalTransactions = currentLocalTransactions.filter(
+            (local) =>
+              !serverTransactions.some((server) =>
+                isSameTransaction(server, local),
+              ),
+          );
+          localTransactionsRef.current = nextLocalTransactions;
+          return nextLocalTransactions;
+        },
+      );
+    } catch (error) {
+      console.error("Gagal sinkronisasi data transaksi:", error);
+    } finally {
+      if (!isSilent) setIsTransactionsLoading(false);
+    }
+  }, []);
 
-  useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: true,
-      offset: 50,
+  const handleTransactionSaved = useCallback((transaction) => {
+    const now = new Date();
+    const localTransaction = {
+      id: `LOCAL-${now.getTime()}`,
+      tanggal: now.toISOString(),
+      ...transaction,
+    };
+
+    setLocalTransactions((currentTransactions) => {
+      const nextLocalTransactions = [localTransaction, ...currentTransactions];
+      localTransactionsRef.current = nextLocalTransactions;
+      return nextLocalTransactions;
+    });
+    setTransactions((currentTransactions) => [
+      localTransaction,
+      ...currentTransactions.filter(
+        (item) => !isSameTransaction(item, localTransaction),
+      ),
+    ]);
+    setTransactionsRefreshKey(now.getTime());
+  }, []);
+
+  const handleSetTransactions = useCallback((nextTransactions) => {
+    if (typeof nextTransactions === "function") {
+      setTransactions(nextTransactions);
+      return;
+    }
+
+    setTransactions(nextTransactions);
+    setLocalTransactions((currentLocalTransactions) => {
+      const nextLocalTransactions = currentLocalTransactions.filter((local) =>
+        nextTransactions.some((item) => item.id === local.id),
+      );
+      localTransactionsRef.current = nextLocalTransactions;
+      return nextLocalTransactions;
     });
   }, []);
+
+  const handleClearTransactions = useCallback(() => {
+    setTransactions([]);
+    localTransactionsRef.current = [];
+    setLocalTransactions([]);
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) fetchProducts();
+  }, [fetchProducts, isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const canAnimate =
+      window.matchMedia("(min-width: 768px)").matches &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!canAnimate) return;
+
+    Promise.all([import("aos"), import("aos/dist/aos.css")]).then(([AOS]) => {
+      AOS.default.init({
+        duration: 700,
+        once: true,
+        offset: 50,
+      });
+    });
+  }, [isLoggedIn]);
+
+  const tabFallback =
+    activeTab === "dashboard" ? <DashboardSkeleton /> : <TableSkeleton />;
 
   const handleLogin = (role, name) => {
     setUserRole(role);
@@ -109,7 +220,7 @@ export default function App() {
     setUserRole("");
     setUserName("");
     setProducts([]);
-    setTransactions([]);
+    handleClearTransactions();
 
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userRole");
@@ -213,11 +324,7 @@ export default function App() {
 
               {/* --- EFEK AKTIF --- */}
               {activeTab === "dashboard" && (
-                <motion.div
-                  layoutId="active-sidebar-tab"
-                  className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
+                <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
               )}
 
               {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
@@ -244,11 +351,7 @@ export default function App() {
             )}
 
             {activeTab === "kasir" && (
-              <motion.div
-                layoutId="active-sidebar-tab"
-                className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve"
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
+              <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
             )}
 
             {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
@@ -276,11 +379,7 @@ export default function App() {
                 )}
 
                 {activeTab === "riwayat" && (
-                  <motion.div
-                    layoutId="active-sidebar-tab"
-                    className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
+                  <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
                 )}
 
                 {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
@@ -306,11 +405,7 @@ export default function App() {
                 )}
 
                 {activeTab === "products" && (
-                  <motion.div
-                    layoutId="active-sidebar-tab"
-                    className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
+                  <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
                 )}
 
                 {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
@@ -355,50 +450,64 @@ export default function App() {
 
       {/* Konten Utama - Tambahkan dark:bg-slate-900 */}
       <main className="flex-1 min-h-0 z-999 p-4 pb-24 md:p-6 overflow-y-auto overscroll-contain bg-gray-50 dark:bg-dashboardDark flex flex-col relative z-10 transition-colors duration-300">
-        {isLoading ? (
+        <Suspense fallback={tabFallback}>
           <>
             {activeTab === "kasir" && (
               <Kasir
                 products={products}
-                fetchProducts={fetchData}
-                isLoading={true}
-              />
-            )}
-            {activeTab === "dashboard" && <DashboardSkeleton />}
-            {activeTab === "products" && <TableSkeleton />}
-            {activeTab === "riwayat" && <TableSkeleton />}
-          </>
-        ) : (
-          <>
-            {activeTab === "kasir" && (
-              <Kasir
-                products={products}
-                fetchProducts={fetchData}
-                isLoading={false}
+                fetchProducts={fetchProducts}
+                onTransactionSaved={handleTransactionSaved}
+                isLoading={isProductsLoading}
               />
             )}
             {activeTab === "dashboard" && userRole === "admin" && (
-              <Dashboard products={products} transactions={transactions} />
+              isProductsLoading ? (
+                <DashboardSkeleton />
+              ) : (
+                <Dashboard
+                  products={products}
+                  dataVersion={transactionsRefreshKey}
+                />
+              )
             )}
             {activeTab === "riwayat" && userRole === "admin" && (
               <Riwayat
                 transactions={transactions}
-                setTransactions={setTransactions}
-                fetchData={fetchData}
+                setTransactions={handleSetTransactions}
+                fetchProducts={fetchProducts}
+                fetchTransactions={fetchTransactions}
+                refreshKey={transactionsRefreshKey}
+                isLoading={isTransactionsLoading}
               />
             )}
             {activeTab === "products" && userRole === "admin" && (
-              <Products
-                products={products}
-                fetchProducts={fetchData}
-                setProducts={setProducts}
-              />
+              isProductsLoading ? (
+                <TableSkeleton />
+              ) : (
+                <Products
+                  products={products}
+                  fetchProducts={fetchProducts}
+                  setProducts={setProducts}
+                />
+              )
             )}
           </>
-        )}
+        </Suspense>
       </main>
 
-      <AiAssistant />
+      {shouldLoadAiAssistant ? (
+        <Suspense fallback={null}>
+          <AiAssistant initialOpen />
+        </Suspense>
+      ) : (
+        <button
+          onClick={() => setShouldLoadAiAssistant(true)}
+          className="fixed bottom-6 right-6 z-9999 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-transform duration-300 hover:scale-110 active:scale-90"
+          title="Buka Asisten Cell AI"
+        >
+          <MessageCircle size={28} />
+        </button>
+      )}
 
       <ConfirmModal
         open={isLogoutModalOpen}

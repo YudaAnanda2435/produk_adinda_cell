@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
+import * as api from "../services/api";
+
+let hasPlayedDashboardCountAnimation = false;
 
 const formatRupiah = (angka) => {
   return new Intl.NumberFormat("id-ID", {
@@ -21,16 +24,28 @@ const formatRupiah = (angka) => {
 };
 
 // Komponen animasi angka
-const AnimatedNumber = ({ targetValue, formatter, duration = 2500 }) => {
-  const [count, setCount] = useState(0);
+const AnimatedNumber = ({
+  targetValue,
+  formatter,
+  duration = 2500,
+  shouldAnimate = false,
+}) => {
+  const target = Number(targetValue) || 0;
+  const renderStatic =
+    !shouldAnimate ||
+    window.matchMedia("(max-width: 767px)").matches ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [count, setCount] = useState(() => (renderStatic ? target : 0));
 
   useEffect(() => {
+    if (renderStatic) return;
+
+    let animationFrame = null;
     let startTimestamp = null;
-    const target = Number(targetValue) || 0;
 
     const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
-      
+
       // Hitung persentase waktu yang berjalan (0 hingga 1)
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
 
@@ -39,16 +54,35 @@ const AnimatedNumber = ({ targetValue, formatter, duration = 2500 }) => {
       setCount(Math.floor(easeOut * target));
 
       if (progress < 1) {
-        window.requestAnimationFrame(step);
+        animationFrame = window.requestAnimationFrame(step);
       } else {
         setCount(target);
       }
     };
 
-    window.requestAnimationFrame(step);
-  }, [targetValue, duration]);
+    animationFrame = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [duration, renderStatic, target]);
 
-  return <>{formatter ? formatter(count) : count}</>;
+  const value = renderStatic ? target : count;
+  return <>{formatter ? formatter(value) : value}</>;
+};
+
+const useReducedDashboardMotion = () => {
+  const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia(
+      "(max-width: 767px), (prefers-reduced-motion: reduce)",
+    );
+    const update = () => setShouldReduceMotion(query.matches);
+
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  return shouldReduceMotion;
 };
 
 const DashboardCard = ({ title, value, icon, colorClass, subtitle }) => (
@@ -70,8 +104,21 @@ const DashboardCard = ({ title, value, icon, colorClass, subtitle }) => (
   </div>
 );
 
-const Dashboard = ({ products = [], transactions = [] }) => {
-const hariIni = new Date().toISOString().split("T")[0];
+const Dashboard = ({ products = [], dataVersion = 0 }) => {
+  const hariIni = new Date().toISOString().split("T")[0];
+  const shouldReduceMotion = useReducedDashboardMotion();
+  const [shouldAnimateCounts] = useState(() => {
+    if (hasPlayedDashboardCountAnimation) return false;
+    hasPlayedDashboardCountAnimation = true;
+    return true;
+  });
+  const [summary, setSummary] = useState({
+    unitTerjual: 0,
+    labaBersih: 0,
+    omzetTotal: 0,
+    barChartData: [],
+  });
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
 // --- PERUBAHAN: Baca memori browser untuk state awal ---
 const [startDate, setStartDate] = useState(() => {
@@ -86,19 +133,29 @@ const [endDate, setEndDate] = useState(() => {
     localStorage.setItem("dashboardEndDate", endDate);
   }, [startDate, endDate]);
 
-  const filteredTransactions = useMemo(() => {
-    if (!startDate || !endDate) return transactions;
+  useEffect(() => {
+    let isActive = true;
 
-    const startWaktu = new Date(startDate).setHours(0, 0, 0, 0);
-    const endWaktu = new Date(endDate).setHours(23, 59, 59, 999);
+    const loadSummary = async () => {
+      setSummaryLoading(true);
+      const data = await api.getDashboardSummary({
+        startDate,
+        endDate,
+        refreshKey: dataVersion,
+      });
+      if (isActive) {
+        setSummary(data);
+        setSummaryLoading(false);
+      }
+    };
 
-    return transactions.filter((t) => {
-      const tglTrans = new Date(t.tanggal).getTime();
-      return tglTrans >= startWaktu && tglTrans <= endWaktu;
-    });
-  }, [transactions, startDate, endDate]);
+    loadSummary();
+    return () => {
+      isActive = false;
+    };
+  }, [dataVersion, startDate, endDate]);
 
-  const stats = useMemo(() => {
+  const productStats = useMemo(() => {
     const totalJenis = products.length;
     const totalStokGudang = products.reduce(
       (sum, p) => sum + (Number(p.stok) || 0),
@@ -109,88 +166,21 @@ const [endDate, setEndDate] = useState(() => {
       0,
     );
 
-    const unitTerjual = filteredTransactions.reduce(
-      (sum, t) => sum + (Number(t.jumlah) || 0),
-      0,
-    );
-    const labaBersih = filteredTransactions.reduce(
-      (sum, t) => sum + (Number(t.laba) || 0),
-      0,
-    );
-    const omzetTotal = filteredTransactions.reduce(
-      (sum, t) => sum + (Number(t.total_harga) || 0),
-      0,
-    );
-
     return {
       totalJenis,
       totalStokGudang,
       modalMengendap,
-      unitTerjual,
-      labaBersih,
-      omzetTotal,
     };
-  }, [products, filteredTransactions]);
+  }, [products]);
 
-  // --- DATA GRAFIK BAR (Diperbarui dengan Pengisian Tanggal Kosong) ---
-  const barChartData = useMemo(() => {
-    if (!startDate || !endDate) return [];
+  const stats = {
+    ...productStats,
+    unitTerjual: summary.unitTerjual,
+    labaBersih: summary.labaBersih,
+    omzetTotal: summary.omzetTotal,
+  };
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const selisihHari = (end - start) / (1000 * 60 * 60 * 24);
-    const isBulanan = selisihHari > 31;
-
-    const grouped = {};
-
-    // 1. BUAT SLOT KOSONG DULU (Agar bulan/hari yang Rp0 tetap muncul)
-    if (isBulanan) {
-      let currMonth = new Date(start.getFullYear(), start.getMonth(), 1);
-      const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
-      while (currMonth <= endMonth) {
-        const bulan = currMonth.toLocaleString("id-ID", { month: "short" });
-        const tahun = currMonth.getFullYear();
-        const key = `${tahun}-${String(currMonth.getMonth() + 1).padStart(2, "0")}`;
-        grouped[key] = { label: `${bulan} ${tahun}`, omzet: 0 };
-        currMonth.setMonth(currMonth.getMonth() + 1);
-      }
-    } else {
-      let currDay = new Date(start.setHours(0, 0, 0, 0));
-      const endDay = new Date(end.setHours(0, 0, 0, 0));
-      while (currDay <= endDay) {
-        const tgl = String(currDay.getDate()).padStart(2, "0");
-        const bln = String(currDay.getMonth() + 1).padStart(2, "0");
-        const key = `${currDay.getFullYear()}-${bln}-${tgl}`;
-        grouped[key] = { label: `${tgl}/${bln}`, omzet: 0 };
-        currDay.setDate(currDay.getDate() + 1);
-      }
-    }
-
-    // 2. MASUKKAN DATA TRANSAKSI KE DALAM SLOT
-    filteredTransactions.forEach((t) => {
-      const dateObj = new Date(t.tanggal);
-      let key = "";
-      if (isBulanan) {
-        key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
-      } else {
-        const tgl = String(dateObj.getDate()).padStart(2, "0");
-        const bln = String(dateObj.getMonth() + 1).padStart(2, "0");
-        key = `${dateObj.getFullYear()}-${bln}-${tgl}`;
-      }
-
-      if (grouped[key]) {
-        grouped[key].omzet += Number(t.total_harga) || 0;
-      }
-    });
-
-    // 3. URUTKAN DAN EXPORT KE GRAFIK
-    const sortedKeys = Object.keys(grouped).sort();
-    return sortedKeys.map((key) => ({
-      date: key,
-      label: grouped[key].label,
-      omzet: grouped[key].omzet,
-    }));
-  }, [filteredTransactions, startDate, endDate]);
+  const barChartData = summary.barChartData || [];
 
   const pieChartData = useMemo(() => {
     const kategori = {};
@@ -310,6 +300,7 @@ const [endDate, setEndDate] = useState(() => {
             <AnimatedNumber
               targetValue={stats.labaBersih}
               formatter={formatRupiah}
+              shouldAnimate={shouldAnimateCounts}
             />
           }
           icon={<TrendingUp size={24} className="text-green-600" />}
@@ -322,6 +313,7 @@ const [endDate, setEndDate] = useState(() => {
             <AnimatedNumber
               targetValue={stats.omzetTotal}
               formatter={formatRupiah}
+              shouldAnimate={shouldAnimateCounts}
             />
           }
           icon={<DollarSign size={24} className="text-blue-600" />}
@@ -334,6 +326,7 @@ const [endDate, setEndDate] = useState(() => {
             <AnimatedNumber
               targetValue={stats.unitTerjual}
               formatter={(val) => `${val} Unit`}
+              shouldAnimate={shouldAnimateCounts}
             />
           }
           icon={<ShoppingCart size={24} className="text-orange-600" />}
@@ -348,6 +341,7 @@ const [endDate, setEndDate] = useState(() => {
               <AnimatedNumber
                 targetValue={stats.modalMengendap}
                 formatter={formatRupiah}
+                shouldAnimate={shouldAnimateCounts}
               />
             }
             icon={<Briefcase size={24} className="text-slate-600" />}
@@ -360,6 +354,7 @@ const [endDate, setEndDate] = useState(() => {
               <AnimatedNumber
                 targetValue={stats.totalStokGudang}
                 formatter={(val) => `${val} Pcs`}
+                shouldAnimate={shouldAnimateCounts}
               />
             }
             icon={<Layers size={24} className="text-indigo-600" />}
@@ -372,6 +367,7 @@ const [endDate, setEndDate] = useState(() => {
               <AnimatedNumber
                 targetValue={stats.totalJenis}
                 formatter={(val) => `${val} Macam`}
+                shouldAnimate={shouldAnimateCounts}
               />
             }
             icon={<Package size={24} className="text-purple-600" />}
@@ -398,7 +394,11 @@ const [endDate, setEndDate] = useState(() => {
             // data-aos-delay="100"
             // data-aos-duration="500"
           >
-            {barChartData.length > 0 ? (
+            {summaryLoading ? (
+              <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
+                Memuat ringkasan omzet...
+              </div>
+            ) : barChartData.length > 0 ? (
               <BarChart
                 dataset={barChartData}
                 xAxis={[{ scaleType: "band", dataKey: "label" }]}
@@ -423,6 +423,7 @@ const [endDate, setEndDate] = useState(() => {
                   },
                 ]}
                 height={300}
+                skipAnimation={shouldReduceMotion}
                 slotProps={{ legend: { hidden: true } }}
                 // 2. PERKECIL MARGIN KIRI (left) MENJADI 45 AGAR MAKSIMAL MERAPAT
                 margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
@@ -448,7 +449,7 @@ const [endDate, setEndDate] = useState(() => {
           <div className="flex-1 w-full flex flex-col items-center justify-center bg-white dark:bg-cardDark rounded-xl p-2">
             {pieChartData.length > 0 ? (
               <>
-                <div className="animate-pie-spin">
+                <div>
                   <PieChart
                     series={[
                       {
@@ -461,6 +462,7 @@ const [endDate, setEndDate] = useState(() => {
                     ]}
                     width={250} // KUNCI AGAR GRAFIK MUNCUL
                     height={200}
+                    skipAnimation={shouldReduceMotion}
                     slotProps={{ legend: { hidden: true } }}
                     margin={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   />

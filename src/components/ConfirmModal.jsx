@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import Typography from "@mui/joy/Typography";
@@ -13,9 +14,27 @@ export default function ConfirmModal({
   confirmText = "Ya, Lanjutkan",
   cancelText = "Batal",
   color = "danger", // default warna merah
+  confirmPhrase = "",
+  confirmPhraseLabel = "",
 }) {
+  const [typedPhrase, setTypedPhrase] = useState("");
+  const needsTypedConfirm = Boolean(confirmPhrase);
+  const isConfirmDisabled =
+    needsTypedConfirm &&
+    typedPhrase.trim().toLowerCase() !== confirmPhrase.toLowerCase();
+
+  const handleClose = () => {
+    setTypedPhrase("");
+    onClose();
+  };
+
+  const handleConfirm = () => {
+    setTypedPhrase("");
+    onConfirm();
+  };
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={handleClose}>
       <ModalDialog
         variant="outlined"
         role="alertdialog"
@@ -41,11 +60,26 @@ export default function ConfirmModal({
           {message}
         </Typography>
 
+        {needsTypedConfirm && (
+          <div className="mb-4">
+            <label className="mb-1.5 block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-300">
+              {confirmPhraseLabel || `Ketik "${confirmPhrase}" untuk konfirmasi`}
+            </label>
+            <input
+              value={typedPhrase}
+              onChange={(event) => setTypedPhrase(event.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-800 outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-100 dark:border-borderDark dark:bg-cardDark dark:text-fontDark"
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
+        )}
+
         <div className="flex justify-end gap-3 mt-2">
           <Button
             variant="plain"
             color="neutral"
-            onClick={onClose}
+            onClick={handleClose}
             className="font-bold dark:text-fontDark! dark:hover:text-darkMode!"
           >
             {cancelText}
@@ -53,7 +87,8 @@ export default function ConfirmModal({
           <Button
             variant="solid"
             color={color}
-            onClick={onConfirm}
+            onClick={handleConfirm}
+            disabled={isConfirmDisabled}
             className="font-bold shadow-sm"
           >
             {confirmText}

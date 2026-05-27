@@ -42,8 +42,8 @@ const TypewriterText = ({ text, isTyping, onScroll }) => {
 };
 
 // --- KOMPONEN UTAMA ---
-export default function AiAssistant() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function AiAssistant({ initialOpen = false }) {
+  const [isOpen, setIsOpen] = useState(initialOpen);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

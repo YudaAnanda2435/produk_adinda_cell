@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Plus,
   Search,
@@ -28,6 +28,16 @@ const formatRupiah = (angka) => {
 
 const toSearchText = (value) =>
   value === null || value === undefined ? "" : String(value).toLowerCase();
+
+const defaultProductFormData = {
+  merk: "",
+  model: "",
+  jenis_sparepart: "",
+  stok: 0,
+  harga_beli: 0,
+  harga_jual: 0,
+  keterangan: "",
+};
 
 const ProductTable = ({ products, onEdit, onDelete }) => (
   <div className="bg-white dark:bg-cardDark rounded-xl shadow-sm border border-gray-100 dark:border-borderDark  flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -125,19 +135,10 @@ const ProductTable = ({ products, onEdit, onDelete }) => (
 );
 
 const ProductForm = ({ onSubmit, initialData, onCancel }) => {
-  const [formData, setFormData] = useState({
-    merk: "",
-    model: "",
-    jenis_sparepart: "",
-    stok: 0,
-    harga_beli: 0,
-    harga_jual: 0,
-    keterangan: "",
-  });
-
-  useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
+  const [formData, setFormData] = useState(() => ({
+    ...defaultProductFormData,
+    ...initialData,
+  }));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -497,6 +498,7 @@ export default function Products({
 
       {isFormOpen && (
         <ProductForm
+          key={editingProduct?.id || "new-product"}
           onSubmit={handleSubmit}
           initialData={editingProduct}
           onCancel={() => setIsFormOpen(false)}

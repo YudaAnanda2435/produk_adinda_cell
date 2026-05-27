@@ -1,5 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X, DollarSign } from "lucide-react";
+
+const defaultFormData = {
+  merk: "",
+  model: "",
+  jenis_sparepart: "",
+  stok: 0,
+  harga_beli: 0,
+  harga_jual: 0,
+  keterangan: "",
+};
 
 const calculateProfit = (hargaJual, hargaBeli) => {
   return Number(hargaJual) - Number(hargaBeli);
@@ -14,19 +24,10 @@ const formatRupiah = (angka) => {
 };
 
 const ProductForm = ({ onSubmit, initialData, onCancel }) => {
-  const [formData, setFormData] = useState({
-    merk: "",
-    model: "",
-    jenis_sparepart: "",
-    stok: 0,
-    harga_beli: 0,
-    harga_jual: 0,
-    keterangan: "",
-  });
-
-  useEffect(() => {
-    if (initialData) setFormData(initialData);
-  }, [initialData]);
+  const [formData, setFormData] = useState(() => ({
+    ...defaultFormData,
+    ...initialData,
+  }));
 
   const handleChange = (e) => {
     const { name, value } = e.target;

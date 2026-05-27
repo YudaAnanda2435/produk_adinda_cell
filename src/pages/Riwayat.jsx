@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Trash2,
   Receipt,
@@ -23,7 +23,14 @@ const formatRupiah = (angka) => {
   }).format(angka || 0);
 };
 
-export default function Riwayat({ transactions, fetchData, setTransactions }) {
+export default function Riwayat({
+  transactions,
+  fetchProducts,
+  fetchTransactions,
+  refreshKey,
+  isLoading,
+  setTransactions,
+}) {
   const sekarang = new Date();
   const awalBulan = new Date(sekarang.getFullYear(), sekarang.getMonth(), 2)
     .toISOString()
@@ -35,6 +42,8 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
   const [isDateOpen, setIsDateOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(50);
 
   // State untuk Loading Modal
   const [loading, setLoading] = useState(false);
@@ -58,6 +67,15 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
       return tglTrans >= startWaktu && tglTrans <= endWaktu;
     });
   }, [transactions, startDate, endDate]);
+
+  const displayedTransactions = useMemo(
+    () => [...filteredTransactions].reverse().slice(0, visibleCount),
+    [filteredTransactions, visibleCount],
+  );
+
+  useEffect(() => {
+    fetchTransactions({ startDate, endDate, refreshKey });
+  }, [endDate, fetchTransactions, refreshKey, startDate]);
 
   const totalOmzet = filteredTransactions.reduce(
     (sum, t) => sum + (Number(t.total_harga) || 0),
@@ -101,7 +119,13 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
         message: "Transaksi berhasil dibatalkan!",
         color: "success",
       });
-      fetchData(true); // Silent refresh untuk mengupdate jumlah stok di halaman produk
+      fetchProducts(true); // Silent refresh untuk mengupdate jumlah stok di halaman produk
+      fetchTransactions({
+        isSilent: true,
+        startDate,
+        endDate,
+        refreshKey: new Date().getTime(),
+      });
     } else {
       setTransactions(previousTransactions); // Kembalikan data yang terhapus
       setNotif({
@@ -112,6 +136,42 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
     }
 
     // 8. Tutup Modal Loading
+    setLoading(false);
+  };
+
+  const handleDeleteAll = async () => {
+    setIsDeleteAllOpen(false);
+    setLoadingMessage("Menghapus riwayat transaksi pada periode ini...");
+    setLoading(true);
+
+    const previousTransactions = [...transactions];
+    const targetIds = new Set(filteredTransactions.map((item) => item.id));
+    setTransactions(transactions.filter((item) => !targetIds.has(item.id)));
+
+    const res = await api.deleteAllTransactions({ startDate, endDate });
+
+    if (res && res.status === "success") {
+      setNotif({
+        open: true,
+        message: "Riwayat transaksi pada periode ini berhasil dihapus!",
+        color: "success",
+      });
+      fetchTransactions({
+        isSilent: true,
+        startDate,
+        endDate,
+        refreshKey: new Date().getTime(),
+      });
+    } else {
+      setTransactions(previousTransactions);
+      setNotif({
+        open: true,
+        message:
+          res?.message || "Gagal menghapus riwayat transaksi pada periode ini.",
+        color: "danger",
+      });
+    }
+
     setLoading(false);
   };
 
@@ -232,7 +292,10 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
                       <input
                         type="date"
                         value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
+                        onChange={(e) => {
+                          setStartDate(e.target.value);
+                          setVisibleCount(50);
+                        }}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
                       />
                     </div>
@@ -243,13 +306,18 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
                       <input
                         type="date"
                         value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
+                        onChange={(e) => {
+                          setEndDate(e.target.value);
+                          setVisibleCount(50);
+                        }}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-gray-700"
                       />
                     </div>
                   </div>
                   <button
-                    onClick={() => setIsDateOpen(false)}
+                    onClick={() => {
+                      setIsDateOpen(false);
+                    }}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
                   >
                     Terapkan
@@ -288,6 +356,18 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
                 </div>
               )}
             </div>
+
+            <button
+              onClick={() => {
+                setIsDeleteAllOpen(true);
+                setIsDateOpen(false);
+                setIsExportOpen(false);
+              }}
+              disabled={isLoading || loading || filteredTransactions.length === 0}
+              className="flex-1 w-full md:w-fit md:flex-none flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+            >
+              <Trash2 size={18} /> Hapus Semua
+            </button>
           </div>
         </div>
 
@@ -323,7 +403,17 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {[...filteredTransactions].reverse().map((t, index) => (
+                {isLoading && (
+                  <tr>
+                    <td
+                      colSpan="8"
+                      className="p-10 text-center text-gray-400 font-medium"
+                    >
+                      Memuat transaksi...
+                    </td>
+                  </tr>
+                )}
+                {!isLoading && displayedTransactions.map((t, index) => (
                   <tr
                     key={t.id || index}
                     className="hover:bg-gray-50 dark:hover:bg-darkMode transition-colors"
@@ -364,7 +454,7 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
                     </td>
                   </tr>
                 ))}
-                {filteredTransactions.length === 0 && (
+                {!isLoading && filteredTransactions.length === 0 && (
                   <tr>
                     <td
                       colSpan="8"
@@ -401,6 +491,17 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
             </table>
           </div>
 
+          {visibleCount < filteredTransactions.length && (
+            <div className="flex justify-center border-t border-gray-100 p-4 print-hidden">
+              <button
+                onClick={() => setVisibleCount((count) => count + 50)}
+                className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+              >
+                Tampilkan 50 Transaksi Lagi
+              </button>
+            </div>
+          )}
+
           <div className="hidden print:flex justify-end gap-10 p-6 mt-4 border-t border-gray-200">
             <div className="text-right">
               <p className="text-sm text-gray-500 font-bold uppercase mb-1">
@@ -432,6 +533,19 @@ export default function Riwayat({ transactions, fetchData, setTransactions }) {
           message="Data penjualan ini akan dihapus permanen dan stok barang akan dikembalikan secara otomatis ke dalam sistem."
           confirmText="Hapus Transaksi"
           color="danger"
+        />
+
+        <ConfirmModal
+          open={isDeleteAllOpen}
+          onClose={() => setIsDeleteAllOpen(false)}
+          onConfirm={handleDeleteAll}
+          title="Hapus Semua Riwayat?"
+          message={`Semua transaksi pada periode ${periodeLabel} akan dihapus permanen dari riwayat tanpa mengubah stok produk. Tindakan ini tidak dapat dibatalkan.`}
+          confirmText="Hapus Semua"
+          cancelText="Batal"
+          color="danger"
+          confirmPhrase="hapus"
+          confirmPhraseLabel='Ketik "hapus" untuk mengaktifkan tombol hapus'
         />
 
         {/* Modal Loading Joy UI */}

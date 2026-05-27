@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   ShoppingCart,
   CheckCircle,
@@ -18,6 +18,16 @@ import Snackbar from "@mui/joy/Snackbar";
 import * as api from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
 import LoadingModal from "../components/LoadingModal";
+
+const toSearchText = (value) =>
+  value === null || value === undefined ? "" : String(value).toLowerCase();
+
+const getProductSearchText = (product) =>
+  toSearchText(
+    `${product.merk || ""} ${product.model || ""} ${
+      product.jenis_sparepart || ""
+    }`,
+  );
 
 // Komponen Skeleton khusus untuk halaman Kasir
 const KasirSkeleton = () => (
@@ -47,7 +57,7 @@ const KasirSkeleton = () => (
     </div>
 
     {/* SKELETON KANAN: Katalog Produk */}
-    <div className="flex-1 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-fit min-h-[500px] lg:min-h-0">
+    <div className="flex-1 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-fit min-h-[580px] lg:min-h-0">
       <div className="flex justify-between items-center mb-6">
         <div>
           <div className="h-6 w-40 bg-slate-200 rounded-lg mb-2"></div>
@@ -79,7 +89,12 @@ const KasirSkeleton = () => (
 );
 
 // Pastikan menerima props isLoading dari App.jsx
-export default function Kasir({ products, fetchProducts, isLoading }) {
+export default function Kasir({
+  products,
+  fetchProducts,
+  onTransactionSaved,
+  isLoading,
+}) {
   const [selectedId, setSelectedId] = useState("");
   const [jumlah, setJumlah] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -118,26 +133,17 @@ const [uangDiterima, setUangDiterima] = useState("");
 
   const filteredProducts = useMemo(() => {
     if (searchTerm.trim().length < 3) return [];
-    const lowerSearch = searchTerm.toLowerCase();
-    return products.filter((p) =>
-      `${p.merk} ${p.model} ${p.jenis_sparepart}`
-        .toLowerCase()
-        .includes(lowerSearch),
-    );
+    const lowerSearch = toSearchText(searchTerm);
+    return products
+      .filter((p) => getProductSearchText(p).includes(lowerSearch))
+      .slice(0, 20);
   }, [products, searchTerm]);
 
   const catalogFiltered = useMemo(() => {
-    const lowerSearch = catalogSearch.toLowerCase();
-    return products.filter((p) =>
-      `${p.merk} ${p.model} ${p.jenis_sparepart}`
-        .toLowerCase()
-        .includes(lowerSearch),
-    );
+    const lowerSearch = toSearchText(catalogSearch);
+    if (!lowerSearch) return products;
+    return products.filter((p) => getProductSearchText(p).includes(lowerSearch));
   }, [products, catalogSearch]);
-
-  useEffect(() => {
-    setVisibleCount(12);
-  }, [catalogSearch]);
 
   const displayedCatalog = catalogFiltered.slice(0, visibleCount);
 
@@ -195,6 +201,7 @@ const [uangDiterima, setUangDiterima] = useState("");
         waktu: new Date().toLocaleString("id-ID"),
         kasir: "Admin",
       });
+      onTransactionSaved?.(dataTransaksi);
       clearSelection();
       setJumlah(1);
     } else {
@@ -232,6 +239,7 @@ const [uangDiterima, setUangDiterima] = useState("");
     const res = await api.checkout(dataKerusakan);
     if (res.status === "success") {
       showNotif("Sistem berhasil mencatat barang rusak.", "success");
+      onTransactionSaved?.(dataKerusakan);
       fetchProducts(true);
       clearSelection();
       setJumlah(1);
@@ -659,7 +667,7 @@ const [uangDiterima, setUangDiterima] = useState("");
         </div>
 
         {/* KOLOM KANAN: Katalog Produk */}
-        <div className="flex-1 bg-white dark:bg-darkMode p-3 md:p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-borderDark flex flex-col min-h-[500px] lg:min-h-0">
+        <div className="flex-1 bg-white dark:bg-darkMode p-3 md:p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-borderDark flex flex-col min-h-[580px] lg:min-h-0 overflow-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
             <div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-fontDark">
@@ -679,13 +687,16 @@ const [uangDiterima, setUangDiterima] = useState("");
                 type="text"
                 placeholder="Cari merk, model, jenis..."
                 value={catalogSearch}
-                onChange={(e) => setCatalogSearch(e.target.value)}
+                onChange={(e) => {
+                  setCatalogSearch(e.target.value);
+                  setVisibleCount(12);
+                }}
                 className="w-full text-[16px] pl-10 pr-4 py-2.5  text-cardDark bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm font-medium"
               />
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto no-scrollbar pr-2 pb-2">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 pb-24 md:pb-4 [-webkit-overflow-scrolling:touch]">
             {displayedCatalog.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* Baris sakti Tailwind v4 untuk manual dark mode class */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: "Helvetica", sans-serif;
+  src: url("./assets/Helvetica.ttf") format("truetype");
+}
+
+@theme {
+  --font-helvetica: "Helvetica";
+  --color-darkMode: #44444E;
+  --color-fontDark: #EEEEEE;
+  --color-cardDark: #35374B;
+  --color-dashboardDark: #222831;
+  --color-borderDark: #7F8487;
+}
+
+@layer components{
+  html{
+    @apply font-helvetica;
+  }
+  .nav-active-curve {
+    position: relative;
+    /* Warna background utama (Light Mode = gray-50) */
+    background-color: #f9fafb; 
+    color: #2563eb; 
+    /* Buat melengkung hanya di kiri */
+    border-radius: 9px 0 0 9999px; 
+  }
+
+  @media (min-width: 768px) {
+  /* Membuat kotak tak terlihat di atas dan bawah */
+  .nav-active-curve::before,
+  .nav-active-curve::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    width: 30px;
+    border: none;
+    outline: none;
+    height: 30px;
+    background-color: transparent;
+    pointer-events: none;
+  }
+
+  /* Menggambar kurva di ATAS tombol aktif */
+  .nav-active-curve::before {
+    top: -30px;
+    border-bottom-right-radius: 30px;
+    border: none;
+    outline: none;
+    box-shadow: 15px 15px 0 15px #f9fafb; /* Warna abu-abu terang */
+  }
+
+  /* Menggambar kurva di BAWAH tombol aktif */
+  .nav-active-curve::after {
+    bottom: -30px;
+    border-top-right-radius: 30px;
+    box-shadow: 15px -15px 0 15px #f9fafb;
+  } 
+
+}
+
+  /* --- ADAPTASI OTOMATIS UNTUK DARK MODE --- */
+  .dark .nav-active-curve {
+    background-color: #000000; /* Warna background utama (Dark = slate-900) */
+    color: #000000; 
+    border: none;
+  }
+  .dark .nav-active-curve::before {
+    box-shadow: 15px 15px 0 15px #222831;
+       border: none;
+  }
+  .dark .nav-active-curve::after {
+    box-shadow: 15px -15px 0 15px #222831;
+       border: none;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar{
+  display: none;
+}
+
+.no-scrollbar{
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* --- KUSTOMISASI GRAFIK MUI X CHARTS UNTUK DARK MODE --- */
+
+/* 1. Mengubah warna teks (angka 2 Jt, 04/04, dll) menjadi putih/abu terang */
+.dark .MuiChartsAxis-tickLabel {
+  fill: #e2e8f0 !important; 
+}
+
+/* 2. Mengubah warna garis sumbu utama (panjang) menjadi abu-abu pudar */
+.dark .MuiChartsAxis-line {
+  stroke: #475569 !important; 
+}
+
+/* 3. Mengubah warna garis penanda kecil (tick) menjadi abu-abu pudar */
+.dark .MuiChartsAxis-tick {
+  stroke: #475569 !important; 
+}
+
+/* Mengubah background kotak menjadi gelap dan garis tepinya */
+.dark .MuiChartsTooltip-paper {
+  background-color: #1e293b !important; /* Warna slate-800 Tailwind */
+  border: 1px solid #334155 !important; /* Warna slate-700 Tailwind */
+}
+
+.dark .MuiBarChart-element {
+  fill: #f8fafc !important; /* Memaksa batang menjadi putih (slate-50) */
+}
+
+/* Mengubah warna teks judul (tanggal) dan isi nilai (omzet) menjadi putih */
+.MuiChartsTooltip-labelCell,
+.MuiChartsTooltip-valueCell,
+.MuiTypography-root {
+  color: #000000 !important; /* Warna slate-50 Tailwind */
+}
+.dark .MuiChartsTooltip-labelCell,
+.dark .MuiChartsTooltip-valueCell,
+.dark .MuiTypography-root {
+  color: #f8fafc !important; /* Warna slate-50 Tailwind */
+}
+
+/* --- ANIMASI BERPUTAR UNTUK PIE CHART --- */
+@keyframes spinAndScale {
+  0% {
+    opacity: 0;
+    transform: rotate(-270deg) scale(0.5); /* Mulai dari kecil, transparan, dan terbalik */
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(0deg) scale(1); /* Berhenti di ukuran dan posisi normal */
+  }
+}
+
+.animate-pie-spin {
+  /* cubic-bezier ini membuat putaran melambat secara halus di akhir (ease-out) */
+  animation: spinAndScale 2.5s cubic-bezier(0.1, 0.8, 0.2, 1.2) forwards;
+  
+  /* Pastikan grafik tetap berada di tengah */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

@@ -37,8 +37,12 @@ export default function Riwayat({
     .split("T")[0];
   const hariIni = sekarang.toISOString().split("T")[0];
 
-  const [startDate, setStartDate] = useState(awalBulan);
-  const [endDate, setEndDate] = useState(hariIni);
+  const [startDate, setStartDate] = useState(
+    () => localStorage.getItem("riwayatStartDate") || awalBulan,
+  );
+  const [endDate, setEndDate] = useState(
+    () => localStorage.getItem("riwayatEndDate") || hariIni,
+  );
   const [isDateOpen, setIsDateOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -72,6 +76,11 @@ export default function Riwayat({
     () => [...filteredTransactions].reverse().slice(0, visibleCount),
     [filteredTransactions, visibleCount],
   );
+
+  useEffect(() => {
+    localStorage.setItem("riwayatStartDate", startDate);
+    localStorage.setItem("riwayatEndDate", endDate);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchTransactions({ startDate, endDate, refreshKey });

@@ -33,8 +33,12 @@ export default function ServiceHistory({
   isLoading,
 }) {
   const defaultRange = getServiceDateRange();
-  const [startDate, setStartDate] = useState(defaultRange.start);
-  const [endDate, setEndDate] = useState(defaultRange.end);
+  const [startDate, setStartDate] = useState(
+    () => localStorage.getItem("serviceHistoryStartDate") || defaultRange.start,
+  );
+  const [endDate, setEndDate] = useState(
+    () => localStorage.getItem("serviceHistoryEndDate") || defaultRange.end,
+  );
   const [isDateOpen, setIsDateOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -60,6 +64,11 @@ export default function ServiceHistory({
     () => getServiceStats(filteredServices),
     [filteredServices],
   );
+
+  useEffect(() => {
+    localStorage.setItem("serviceHistoryStartDate", startDate);
+    localStorage.setItem("serviceHistoryEndDate", endDate);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchServiceTransactions?.({ startDate, endDate, refreshKey });

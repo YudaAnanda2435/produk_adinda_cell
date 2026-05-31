@@ -13,6 +13,7 @@ import {
   Tags,
   AlertCircle,
   ChevronDown,
+  Download,
   Trash2,
 } from "lucide-react";
 import Snackbar from "@mui/joy/Snackbar";
@@ -54,6 +55,282 @@ const formatReceiptTime = (date = new Date()) =>
     minute: "2-digit",
     hour12: true,
   });
+
+const RECEIPT_IMAGE_WIDTH = 384;
+const RECEIPT_IMAGE_PADDING = 24;
+
+const loadReceiptImage = (src) =>
+  new Promise((resolve) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+
+const wrapCanvasText = (context, text, maxWidth) => {
+  const source = String(text || "-");
+  const words = source.split(/\s+/).filter(Boolean);
+  const lines = [];
+  let currentLine = "";
+
+  words.forEach((word) => {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (context.measureText(testLine).width <= maxWidth) {
+      currentLine = testLine;
+      return;
+    }
+
+    if (currentLine) lines.push(currentLine);
+
+    if (context.measureText(word).width <= maxWidth) {
+      currentLine = word;
+      return;
+    }
+
+    let chunk = "";
+    word.split("").forEach((char) => {
+      const testChunk = `${chunk}${char}`;
+      if (context.measureText(testChunk).width <= maxWidth) {
+        chunk = testChunk;
+      } else {
+        if (chunk) lines.push(chunk);
+        chunk = char;
+      }
+    });
+    currentLine = chunk;
+  });
+
+  if (currentLine) lines.push(currentLine);
+  return lines.length > 0 ? lines : ["-"];
+};
+
+const createReceiptPngDataUrl = async ({
+  receiptData,
+  receiptItems,
+  receiptSubtotal,
+  receiptShipping,
+  receiptGrandTotal,
+}) => {
+  const logo = await loadReceiptImage(RECEIPT_LOGO_SRC);
+  const measureCanvas = document.createElement("canvas");
+  const measureContext = measureCanvas.getContext("2d");
+  const contentWidth = RECEIPT_IMAGE_WIDTH - RECEIPT_IMAGE_PADDING * 2;
+  const commands = [];
+  let y = RECEIPT_IMAGE_PADDING;
+
+  const addText = (text, options = {}) => {
+    const {
+      font = "700 18px Courier New",
+      lineHeight = 22,
+      align = "left",
+      marginBottom = 0,
+      maxWidth = contentWidth,
+    } = options;
+    measureContext.font = font;
+    const lines = wrapCanvasText(measureContext, text, maxWidth);
+    commands.push({ type: "text", lines, font, lineHeight, align, y, maxWidth });
+    y += lines.length * lineHeight + marginBottom;
+  };
+
+  const addPair = (left, right, options = {}) => {
+    const {
+      font = "700 16px Courier New",
+      lineHeight = 20,
+      marginBottom = 0,
+      leftWidth = 210,
+      rightWidth = contentWidth - 220,
+    } = options;
+    measureContext.font = font;
+    const leftLines = Array.isArray(left)
+      ? left
+      : wrapCanvasText(measureContext, left, leftWidth);
+    const rightLines = Array.isArray(right)
+      ? right
+      : wrapCanvasText(measureContext, right, rightWidth);
+    const lineCount = Math.max(leftLines.length, rightLines.length);
+    commands.push({
+      type: "pair",
+      leftLines,
+      rightLines,
+      font,
+      lineHeight,
+      y,
+      leftWidth,
+    });
+    y += lineCount * lineHeight + marginBottom;
+  };
+
+  const addDivider = (marginY = 14) => {
+    y += marginY;
+    commands.push({ type: "divider", y });
+    y += marginY;
+  };
+
+  if (logo) {
+    const maxLogoWidth = 96;
+    const maxLogoHeight = 58;
+    const ratio = Math.min(maxLogoWidth / logo.width, maxLogoHeight / logo.height);
+    const width = logo.width * ratio;
+    const height = logo.height * ratio;
+    commands.push({ type: "image", image: logo, width, height, y });
+    y += height + 14;
+  }
+
+  addText(RECEIPT_STORE_NAME, {
+    font: "900 28px Courier New",
+    lineHeight: 32,
+    align: "center",
+    marginBottom: 10,
+    maxWidth: 300,
+  });
+  RECEIPT_ADDRESS_LINES.forEach((line) =>
+    addText(line, {
+      font: "700 15px Courier New",
+      lineHeight: 19,
+      align: "center",
+      maxWidth: 300,
+    }),
+  );
+  addText(RECEIPT_CONTACT, {
+    font: "700 15px Courier New",
+    lineHeight: 19,
+    align: "center",
+    maxWidth: 300,
+  });
+
+  addDivider();
+  addPair(["Bill", receiptData.billNumber], [receiptData.tanggal, receiptData.jam], {
+    font: "700 16px Courier New",
+    lineHeight: 20,
+  });
+  addDivider();
+  addPair("Item x Qty", "Rate", {
+    font: "900 17px Courier New",
+    lineHeight: 22,
+    marginBottom: 8,
+  });
+
+  receiptItems.forEach((item) => {
+    addPair(item.nama_produk, formatReceiptAmount(item.total_harga), {
+      font: "700 16px Courier New",
+      lineHeight: 20,
+      marginBottom: item.keterangan && item.keterangan !== "-" ? 0 : 4,
+      leftWidth: 225,
+      rightWidth: 90,
+    });
+    if (item.keterangan && item.keterangan !== "-") {
+      addText(`(${item.keterangan})`, {
+        font: "700 15px Courier New",
+        lineHeight: 18,
+        marginBottom: 2,
+        maxWidth: 220,
+      });
+    }
+    addPair(
+      `${item.jumlah} x ${formatReceiptAmount(item.harga_satuan)}`,
+      formatReceiptAmount(item.total_harga),
+      {
+        font: "700 15px Courier New",
+        lineHeight: 19,
+        marginBottom: 8,
+        leftWidth: 210,
+        rightWidth: 95,
+      },
+    );
+  });
+
+  addDivider();
+  addPair("Total pesanan", formatReceiptAmount(receiptSubtotal), {
+    font: "900 17px Courier New",
+    lineHeight: 22,
+  });
+  addPair("Ongkir", formatReceiptAmount(receiptShipping), {
+    font: "900 17px Courier New",
+    lineHeight: 22,
+  });
+  addPair("Total bayar", formatReceiptAmount(receiptGrandTotal), {
+    font: "900 17px Courier New",
+    lineHeight: 22,
+  });
+  addDivider();
+  addText("TERIMA KASIH", {
+    font: "900 18px Courier New",
+    lineHeight: 24,
+    align: "center",
+    marginBottom: 18,
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = RECEIPT_IMAGE_WIDTH;
+  canvas.height = Math.ceil(y + RECEIPT_IMAGE_PADDING);
+  const context = canvas.getContext("2d");
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#000000";
+  context.strokeStyle = "#000000";
+  context.lineWidth = 1;
+
+  commands.forEach((command) => {
+    if (command.type === "image") {
+      context.drawImage(
+        command.image,
+        (RECEIPT_IMAGE_WIDTH - command.width) / 2,
+        command.y,
+        command.width,
+        command.height,
+      );
+      return;
+    }
+
+    if (command.type === "divider") {
+      context.save();
+      context.setLineDash([5, 4]);
+      context.beginPath();
+      context.moveTo(RECEIPT_IMAGE_PADDING, command.y);
+      context.lineTo(RECEIPT_IMAGE_WIDTH - RECEIPT_IMAGE_PADDING, command.y);
+      context.stroke();
+      context.restore();
+      return;
+    }
+
+    context.font = command.font;
+    context.fillStyle = "#000000";
+    context.textBaseline = "top";
+
+    if (command.type === "pair") {
+      command.leftLines.forEach((line, index) => {
+        context.textAlign = "left";
+        context.fillText(
+          line,
+          RECEIPT_IMAGE_PADDING,
+          command.y + index * command.lineHeight,
+        );
+      });
+      command.rightLines.forEach((line, index) => {
+        context.textAlign = "right";
+        context.fillText(
+          line,
+          RECEIPT_IMAGE_WIDTH - RECEIPT_IMAGE_PADDING,
+          command.y + index * command.lineHeight,
+        );
+      });
+      return;
+    }
+
+    command.lines.forEach((line, index) => {
+      context.textAlign = command.align;
+      const x =
+        command.align === "center"
+          ? RECEIPT_IMAGE_WIDTH / 2
+          : RECEIPT_IMAGE_PADDING;
+      context.fillText(line, x, command.y + index * command.lineHeight);
+    });
+  });
+
+  return canvas.toDataURL("image/png");
+};
 
 // Komponen Skeleton khusus untuk halaman Kasir
 const KasirSkeleton = () => (
@@ -420,6 +697,34 @@ const [uangDiterima, setUangDiterima] = useState("");
           ]
         : [];
 
+  const handleDownloadReceiptPng = async () => {
+    if (!receiptData) return;
+
+    try {
+      const dataUrl = await createReceiptPngDataUrl({
+        receiptData,
+        receiptItems,
+        receiptSubtotal,
+        receiptShipping,
+        receiptGrandTotal,
+      });
+      const link = document.createElement("a");
+      const billNumber = String(receiptData.billNumber || Date.now()).replace(
+        "#",
+        "",
+      );
+      link.href = dataUrl;
+      link.download = `Struk-Adinda-${billNumber}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotif("Struk PNG berhasil diunduh.", "success");
+    } catch (error) {
+      console.error("Gagal membuat struk PNG:", error);
+      showNotif("Gagal membuat struk PNG.", "danger");
+    }
+  };
+
   return (
     <>
       <style>{`
@@ -573,18 +878,24 @@ const [uangDiterima, setUangDiterima] = useState("");
               TERIMA KASIH
             </div>
 
-            <div className="receipt-actions mt-6 flex gap-3 print:hidden">
+            <div className="receipt-actions mt-6 grid grid-cols-1 gap-2 print:hidden">
+              <button
+                onClick={handleDownloadReceiptPng}
+                className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-200 transition-colors hover:bg-emerald-700"
+              >
+                <Download size={16} /> Unduh PNG
+              </button>
+              <button
+                onClick={cetakStruk}
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-200 transition-colors hover:bg-blue-700"
+              >
+                <Printer size={16} /> Cetak
+              </button>
               <button
                 onClick={tutupStruk}
                 className="flex-1 rounded-xl bg-gray-100 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200"
               >
                 Tutup
-              </button>
-              <button
-                onClick={cetakStruk}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-200 transition-colors hover:bg-blue-700"
-              >
-                <Printer size={16} /> Cetak
               </button>
             </div>
           </div>

@@ -57,7 +57,7 @@ const formatReceiptTime = (date = new Date()) =>
   });
 
 const RECEIPT_IMAGE_WIDTH = 384;
-const RECEIPT_IMAGE_PADDING = 24;
+const RECEIPT_IMAGE_PADDING = 12;
 
 const loadReceiptImage = (src) =>
   new Promise((resolve) => {
@@ -138,8 +138,8 @@ const createReceiptPngDataUrl = async ({
       font = "700 16px Courier New",
       lineHeight = 20,
       marginBottom = 0,
-      leftWidth = 210,
-      rightWidth = contentWidth - 220,
+      leftWidth = 238,
+      rightWidth = contentWidth - 246,
     } = options;
     measureContext.font = font;
     const leftLines = Array.isArray(left)
@@ -161,15 +161,15 @@ const createReceiptPngDataUrl = async ({
     y += lineCount * lineHeight + marginBottom;
   };
 
-  const addDivider = (marginY = 14) => {
+  const addDivider = (marginY = 10) => {
     y += marginY;
     commands.push({ type: "divider", y });
     y += marginY;
   };
 
   if (logo) {
-    const maxLogoWidth = 96;
-    const maxLogoHeight = 58;
+    const maxLogoWidth = 112;
+    const maxLogoHeight = 66;
     const ratio = Math.min(maxLogoWidth / logo.width, maxLogoHeight / logo.height);
     const width = logo.width * ratio;
     const height = logo.height * ratio;
@@ -178,87 +178,87 @@ const createReceiptPngDataUrl = async ({
   }
 
   addText(RECEIPT_STORE_NAME, {
-    font: "900 28px Courier New",
-    lineHeight: 32,
+    font: "900 32px Courier New",
+    lineHeight: 36,
     align: "center",
-    marginBottom: 10,
-    maxWidth: 300,
+    marginBottom: 8,
+    maxWidth: 350,
   });
   RECEIPT_ADDRESS_LINES.forEach((line) =>
     addText(line, {
-      font: "700 15px Courier New",
-      lineHeight: 19,
+      font: "800 18px Courier New",
+      lineHeight: 22,
       align: "center",
-      maxWidth: 300,
+      maxWidth: 350,
     }),
   );
   addText(RECEIPT_CONTACT, {
-    font: "700 15px Courier New",
-    lineHeight: 19,
+    font: "800 18px Courier New",
+    lineHeight: 22,
     align: "center",
-    maxWidth: 300,
+    maxWidth: 350,
   });
 
   addDivider();
   addPair(["Bill", receiptData.billNumber], [receiptData.tanggal, receiptData.jam], {
-    font: "700 16px Courier New",
-    lineHeight: 20,
+    font: "800 19px Courier New",
+    lineHeight: 23,
   });
   addDivider();
   addPair("Item x Qty", "Rate", {
-    font: "900 17px Courier New",
-    lineHeight: 22,
-    marginBottom: 8,
+    font: "900 20px Courier New",
+    lineHeight: 24,
+    marginBottom: 6,
   });
 
   receiptItems.forEach((item) => {
     addPair(item.nama_produk, formatReceiptAmount(item.total_harga), {
-      font: "700 16px Courier New",
-      lineHeight: 20,
+      font: "800 19px Courier New",
+      lineHeight: 23,
       marginBottom: item.keterangan && item.keterangan !== "-" ? 0 : 4,
-      leftWidth: 225,
-      rightWidth: 90,
+      leftWidth: 250,
+      rightWidth: 108,
     });
     if (item.keterangan && item.keterangan !== "-") {
       addText(`(${item.keterangan})`, {
-        font: "700 15px Courier New",
-        lineHeight: 18,
+        font: "800 18px Courier New",
+        lineHeight: 21,
         marginBottom: 2,
-        maxWidth: 220,
+        maxWidth: 250,
       });
     }
     addPair(
       `${item.jumlah} x ${formatReceiptAmount(item.harga_satuan)}`,
       formatReceiptAmount(item.total_harga),
       {
-        font: "700 15px Courier New",
-        lineHeight: 19,
-        marginBottom: 8,
-        leftWidth: 210,
-        rightWidth: 95,
+        font: "800 18px Courier New",
+        lineHeight: 22,
+        marginBottom: 6,
+        leftWidth: 235,
+        rightWidth: 108,
       },
     );
   });
 
   addDivider();
   addPair("Total pesanan", formatReceiptAmount(receiptSubtotal), {
-    font: "900 17px Courier New",
-    lineHeight: 22,
+    font: "900 20px Courier New",
+    lineHeight: 24,
   });
   addPair("Ongkir", formatReceiptAmount(receiptShipping), {
-    font: "900 17px Courier New",
-    lineHeight: 22,
+    font: "900 20px Courier New",
+    lineHeight: 24,
   });
   addPair("Total bayar", formatReceiptAmount(receiptGrandTotal), {
-    font: "900 17px Courier New",
-    lineHeight: 22,
+    font: "900 20px Courier New",
+    lineHeight: 24,
   });
   addDivider();
   addText("TERIMA KASIH", {
-    font: "900 18px Courier New",
-    lineHeight: 24,
+    font: "900 22px Courier New",
+    lineHeight: 28,
     align: "center",
-    marginBottom: 18,
+    marginBottom: 10,
   });
 
   const canvas = document.createElement("canvas");
@@ -768,7 +768,7 @@ const [uangDiterima, setUangDiterima] = useState("");
             max-width: 58mm !important;
             min-height: 0 !important;
             margin: 0 !important;
-            padding: 5mm 4mm !important;
+            padding: 3mm 2mm !important;
             box-shadow: none !important;
             border: none !important;
             border-radius: 0 !important;
@@ -788,7 +788,7 @@ const [uangDiterima, setUangDiterima] = useState("");
         <div className="receipt-preview-shell fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm print:static print:block print:bg-white print:p-0">
           <div
             id="receipt-box"
-            className="w-[320px] bg-[#faf8ef] px-6 py-7 text-slate-900 shadow-2xl animate-in zoom-in-95 duration-200 print:w-[58mm] print:bg-white print:shadow-none"
+            className="w-[340px] bg-[#faf8ef] px-4 py-5 text-slate-900 shadow-2xl animate-in zoom-in-95 duration-200 print:w-[58mm] print:bg-white print:shadow-none"
             style={{
               fontFamily:
                 '"Courier New", "Lucida Console", "Roboto Mono", monospace',
@@ -801,12 +801,12 @@ const [uangDiterima, setUangDiterima] = useState("");
                 onError={(event) => {
                   event.currentTarget.style.display = "none";
                 }}
-                className="mx-auto mb-3 h-14 w-auto object-contain grayscale"
+                className="mx-auto mb-2 h-16 w-auto object-contain grayscale"
               />
-              <h2 className="text-[22px] font-black leading-none tracking-[0.08em]">
+              <h2 className="text-[27px] font-black leading-none tracking-[0.06em]">
                 {RECEIPT_STORE_NAME}
               </h2>
-              <div className="mt-2 text-[11px] font-bold leading-tight text-slate-700">
+              <div className="mt-2 text-[15px] font-extrabold leading-tight text-slate-700">
                 {RECEIPT_ADDRESS_LINES.map((line) => (
                   <p key={line}>{line}</p>
                 ))}
@@ -814,18 +814,18 @@ const [uangDiterima, setUangDiterima] = useState("");
               </div>
             </div>
 
-            <div className="my-3 border-t border-dashed border-slate-500" />
+            <div className="my-2.5 border-t border-dashed border-slate-500" />
 
-            <div className="flex items-start justify-between text-[12px] font-bold leading-tight">
+            <div className="flex items-start justify-between text-[16px] font-extrabold leading-tight">
               <span>Bill {receiptData.billNumber}</span>
               <span className="text-right">
                 {receiptData.tanggal} {receiptData.jam}
               </span>
             </div>
 
-            <div className="my-3 border-t border-dashed border-slate-500" />
+            <div className="my-2.5 border-t border-dashed border-slate-500" />
 
-            <div className="space-y-2 text-[12px] font-bold leading-tight">
+            <div className="space-y-2 text-[16px] font-extrabold leading-tight">
               <div className="flex items-end justify-between gap-3 pt-1">
                 <span>Item x Qty</span>
                 <span>Rate</span>
@@ -833,7 +833,7 @@ const [uangDiterima, setUangDiterima] = useState("");
               {receiptItems.map((item, index) => (
                 <div key={`${item.id_produk}-${index}`} className="space-y-1">
                   <div className="flex items-end justify-between gap-3">
-                    <span className="max-w-[170px] break-words">
+                    <span className="max-w-[220px] break-words">
                       {item.nama_produk}
                     </span>
                     <span className="shrink-0">
@@ -841,7 +841,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                     </span>
                   </div>
                   {item.keterangan && item.keterangan !== "-" && (
-                    <div className="max-w-[170px] break-words text-slate-700">
+                    <div className="max-w-[220px] break-words text-slate-700">
                       ({item.keterangan})
                     </div>
                   )}
@@ -855,9 +855,9 @@ const [uangDiterima, setUangDiterima] = useState("");
               ))}
             </div>
 
-            <div className="my-3 border-t border-dashed border-slate-500" />
+            <div className="my-2.5 border-t border-dashed border-slate-500" />
 
-            <div className="space-y-1 text-[13px] font-black leading-tight">
+            <div className="space-y-1 text-[17px] font-black leading-tight">
               <div className="flex justify-between gap-3">
                 <span>Total pesanan</span>
                 <span>{formatReceiptAmount(receiptSubtotal)}</span>
@@ -872,9 +872,9 @@ const [uangDiterima, setUangDiterima] = useState("");
               </div>
             </div>
 
-            <div className="my-3 border-t border-dashed border-slate-500" />
+            <div className="my-2.5 border-t border-dashed border-slate-500" />
 
-            <div className="pt-3 text-center text-[14px] font-black tracking-wider">
+            <div className="pt-2 text-center text-[18px] font-black tracking-wider">
               TERIMA KASIH
             </div>
 

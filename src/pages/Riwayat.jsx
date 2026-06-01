@@ -25,7 +25,6 @@ const formatRupiah = (angka) => {
 
 export default function Riwayat({
   transactions,
-  fetchProducts,
   fetchTransactions,
   refreshKey,
   isLoading,
@@ -109,7 +108,7 @@ export default function Riwayat({
     setDeleteId(null);
 
     // 3. BUKA MODAL LOADING
-    setLoadingMessage("Membatalkan transaksi & mengembalikan stok...");
+    setLoadingMessage("Menghapus riwayat transaksi...");
     setLoading(true);
 
     // 4. Simpan memori lama untuk berjaga-jaga jika server error
@@ -125,10 +124,9 @@ export default function Riwayat({
     if (res && res.status === "success") {
       setNotif({
         open: true,
-        message: "Transaksi berhasil dibatalkan!",
+        message: "Riwayat transaksi berhasil dihapus!",
         color: "success",
       });
-      fetchProducts(true); // Silent refresh untuk mengupdate jumlah stok di halaman produk
       fetchTransactions({
         isSilent: true,
         startDate,
@@ -139,7 +137,7 @@ export default function Riwayat({
       setTransactions(previousTransactions); // Kembalikan data yang terhapus
       setNotif({
         open: true,
-        message: "Gagal membatalkan transaksi.",
+        message: res?.message || "Gagal menghapus riwayat transaksi.",
         color: "danger",
       });
     }
@@ -544,14 +542,14 @@ export default function Riwayat({
 
         {/* --- AREA MODAL DAN NOTIFIKASI --- */}
 
-        {/* Modal Konfirmasi Batal */}
+        {/* Modal Konfirmasi Hapus */}
         <ConfirmModal
           open={!!deleteId}
           onClose={() => setDeleteId(null)}
           onConfirm={handleDelete}
-          title="Batalkan Transaksi?"
-          message="Data penjualan ini akan dihapus permanen dan stok barang akan dikembalikan secara otomatis ke dalam sistem."
-          confirmText="Hapus Transaksi"
+          title="Hapus Riwayat Transaksi?"
+          message="Data penjualan ini akan dihapus permanen dari riwayat tanpa mengubah stok produk. Tindakan ini tidak dapat dibatalkan."
+          confirmText="Hapus Riwayat"
           color="danger"
         />
 

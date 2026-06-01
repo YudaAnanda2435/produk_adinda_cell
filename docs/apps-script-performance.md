@@ -59,7 +59,7 @@ function clearDataCache_() {
 }
 ```
 
-Panggil `clearDataCache_()` setelah aksi `create`, `update`, `delete`, `checkout`, `delete_transaction`, dan `delete_all_transactions` berhasil.
+Panggil `clearDataCache_()` setelah aksi `create`, `update`, `delete`, `checkout`, `delete_transaction_history`, dan `delete_all_transactions` berhasil.
 
 ## Contoh doGet
 

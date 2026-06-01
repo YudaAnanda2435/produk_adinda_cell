@@ -33,6 +33,7 @@ const getProductSearchText = (product) =>
 
 const RECEIPT_LOGO_SRC = "/adinda.png";
 const RECEIPT_STORE_NAME = "ADINDA CELLULAR";
+const RECEIPT_TAGLINE = "Service HP & Jual sparepart";
 const RECEIPT_ADDRESS_LINES = [
   "Jln.pasir ipis surade ",
   "(pertigaan smk bina bangsa)",
@@ -181,7 +182,14 @@ const createReceiptPngDataUrl = async ({
     font: "900 32px Courier New",
     lineHeight: 36,
     align: "center",
-    marginBottom: 8,
+    marginBottom: 6,
+    maxWidth: 350,
+  });
+  addText(RECEIPT_TAGLINE, {
+    font: "800 17px Courier New",
+    lineHeight: 21,
+    align: "center",
+    marginBottom: 6,
     maxWidth: 350,
   });
   RECEIPT_ADDRESS_LINES.forEach((line) =>
@@ -407,6 +415,7 @@ export default function Kasir({
   const [receiptData, setReceiptData] = useState(null);
   const [metodePembayaran, setMetodePembayaran] = useState("Tunai");
 const [uangDiterima, setUangDiterima] = useState("");
+  const [ongkir, setOngkir] = useState(0);
   const [isRusakModalOpen, setIsRusakModalOpen] = useState(false); // State untuk Snackbar Joy UI
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -469,6 +478,7 @@ const [uangDiterima, setUangDiterima] = useState("");
     (sum, item) => sum + Number(item.total_harga || 0),
     0,
   );
+  const totalBayar = totalHarga + (Number(ongkir) || 0);
   const totalCartQty = cartItems.reduce(
     (sum, item) => sum + Number(item.jumlah || 0),
     0,
@@ -571,7 +581,7 @@ const [uangDiterima, setUangDiterima] = useState("");
   const handleJual = async () => {
     if (cartItems.length === 0)
       return showNotif("Keranjang masih kosong.", "danger");
-    if (metodePembayaran === "Tunai" && Number(uangDiterima) < totalHarga)
+    if (metodePembayaran === "Tunai" && Number(uangDiterima) < totalBayar)
       return showNotif("Uang diterima masih kurang.", "danger");
 
     setLoadingMessage("Memproses transaksi penjualan...");
@@ -610,7 +620,7 @@ const [uangDiterima, setUangDiterima] = useState("");
         billNumber: `#${String(receiptDate.getTime()).slice(-4)}`,
         tanggal: formatReceiptDate(receiptDate),
         jam: formatReceiptTime(receiptDate),
-        ongkir: 0,
+        ongkir: Number(ongkir) || 0,
         waktu: receiptDate.toLocaleString("id-ID"),
         kasir: "Admin",
       });
@@ -618,6 +628,7 @@ const [uangDiterima, setUangDiterima] = useState("");
       clearSelection();
       setJumlah(1);
       setUangDiterima("");
+      setOngkir(0);
       fetchProducts(true);
     } catch (error) {
       showNotif("Sistem gagal mencatat transaksi: " + error.message, "danger");
@@ -806,6 +817,9 @@ const [uangDiterima, setUangDiterima] = useState("");
               <h2 className="text-[27px] font-black leading-none tracking-[0.06em]">
                 {RECEIPT_STORE_NAME}
               </h2>
+              <p className="mt-1 text-[14px] font-extrabold leading-tight text-slate-800">
+                {RECEIPT_TAGLINE}
+              </p>
               <div className="mt-2 text-[15px] font-extrabold leading-tight text-slate-700">
                 {RECEIPT_ADDRESS_LINES.map((line) => (
                   <p key={line}>{line}</p>
@@ -1174,12 +1188,39 @@ const [uangDiterima, setUangDiterima] = useState("");
                   {formatRupiah(totalHarga)}
                 </span>
               </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-500 dark:text-fontDark">
+                  Total Bayar
+                </span>
+                <span className="text-lg font-black text-green-700">
+                  {formatRupiah(totalBayar)}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 pt-4 border-t border-gray-100">
               {/* AREA METODE PEMBAYARAN */}
               {cartItems.length > 0 && (
                 <div className="order-t border-gray-100 space-y-4 animate-in fade-in">
+                  <div>
+                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
+                      Ongkir
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="text-slate-400 font-medium">Rp</span>
+                      </div>
+                      <input
+                        type="number"
+                        min="0"
+                        value={ongkir}
+                        onChange={(event) => setOngkir(event.target.value)}
+                        placeholder="0"
+                        className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 dark:text-white font-medium text-lg"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
                       Metode Pembayaran
@@ -1255,10 +1296,10 @@ const [uangDiterima, setUangDiterima] = useState("");
                           Kembalian:
                         </span>
                         <span
-                          className={`text-lg font-bold ${Number(uangDiterima) >= totalHarga ? "text-green-500" : "text-red-500"}`}
+                          className={`text-lg font-bold ${Number(uangDiterima) >= totalBayar ? "text-green-500" : "text-red-500"}`}
                         >
                           {Number(uangDiterima) > 0
-                            ? formatRupiah(Number(uangDiterima) - totalHarga)
+                            ? formatRupiah(Number(uangDiterima) - totalBayar)
                             : formatRupiah(0)}
                         </span>
                       </div>
@@ -1331,7 +1372,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                 disabled={
                   loading ||
                   cartItems.length === 0 ||
-                  (metodePembayaran === "Tunai" && uangDiterima < totalHarga)
+                  (metodePembayaran === "Tunai" && uangDiterima < totalBayar)
                 }
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:bg-slate-300 disabled:shadow-none hover:-translate-y-0.5 active:translate-y-0"
               >
@@ -1530,7 +1571,7 @@ const [uangDiterima, setUangDiterima] = useState("");
               </div>
 
               <p className="mt-6 text-xl font-bold text-blue-600 dark:text-blue-400">
-                Total: {formatRupiah(totalHarga)}
+                Total: {formatRupiah(totalBayar)}
               </p>
             </div>
           </div>

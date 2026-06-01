@@ -16,7 +16,7 @@ Kode di bawah mempertahankan pola kode lama yang sudah aman, lalu menambahkan:
 - cache yang aman: kalau data terlalu besar untuk `CacheService`, request tetap sukses tanpa cache
 - `refresh` query untuk melewati cache saat frontend butuh data paling baru
 - `delete_all_transactions` hanya menghapus riwayat transaksi dan tidak mengembalikan stok produk
-- clear cache setelah create/update/delete/checkout/delete_transaction/delete_all_transactions
+- clear cache setelah create/update/delete/checkout/delete_transaction_history/delete_all_transactions
 - modul `service_transactions` untuk laporan jasa service yang terpisah dari transaksi penjualan stok
 
 ## Sheet Service
@@ -425,30 +425,26 @@ function doPost(e) {
       });
     }
 
-    else if (action === "delete_transaction") {
+    else if (action === "delete_transaction_history" || action === "delete_transaction") {
       var sheetTransDel = ss.getSheetByName("transaksi");
-      var sheetProdDel = ss.getSheetByName("products");
       var transValues = sheetTransDel.getDataRange().getValues();
+      var deletedTransaction = false;
 
       for (var i = 1; i < transValues.length; i++) {
         if (String(transValues[i][0]) === String(data.id)) {
-          var idProduk = transValues[i][1];
-          var jumlahBalik = Number(transValues[i][3]);
-
-          var prodValuesDel = sheetProdDel.getDataRange().getValues();
-          for (var j = 1; j < prodValuesDel.length; j++) {
-            if (String(prodValuesDel[j][0]) === String(idProduk)) {
-              var stokSekarang = Number(prodValuesDel[j][4]);
-              sheetProdDel.getRange(j + 1, 5).setValue(stokSekarang + jumlahBalik);
-              break;
-            }
-          }
           sheetTransDel.deleteRow(i + 1);
+          deletedTransaction = true;
           break;
         }
       }
+
       clearDataCache_();
-      return json_({ status: "success" });
+      return json_({
+        status: deletedTransaction ? "success" : "error",
+        message: deletedTransaction
+          ? "Riwayat transaksi berhasil dihapus tanpa mengubah stok."
+          : "Transaksi tidak ditemukan."
+      });
     }
 
     else if (action === "create_service_transaction") {

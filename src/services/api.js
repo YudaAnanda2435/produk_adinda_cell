@@ -1,5 +1,5 @@
 export const API_URL =
-  "https://script.google.com/macros/s/AKfycbxF8Ta5nszHKeWOvuYJUt10i5nG6wLgYZa98hBBxn0GwJ0rZLd2FNvudsIqDl-kCEYY/exec";
+  "https://script.google.com/macros/s/AKfycbzBeENMmZIgG_j3ev3EtjePLn6eQd38AXSMZ3P0vYV7Vo5z5TGMGrrsNuPnQ9hQP35n/exec";
   // "https://script.google.com/macros/s/AKfycbwqxg4GnOmg7n1z1-00PtCPQYM9T68QpiwSY8dyjDxwnFp41RhUTxp1_JZNtAAtvbiy/exec";
 
 // "https://script.google.com/macros/s/AKfycbxHQ_T4DJulSvfZ1lifki19J_0AZvYhtyj2zydNlJXcG3Xw2S7YUPPatXA9AmDNGSrqyw/exec";
@@ -243,7 +243,7 @@ export const updateProduct = (data) => sendPostRequest("update", data);
 export const deleteProduct = (id) => sendPostRequest("delete", { id });
 export const checkout = (data) => sendPostRequest("checkout", data);
 export const deleteTransaction = (id) =>
-  sendPostRequest("delete_transaction", { id });
+  sendPostRequest("delete_transaction_history", { id });
 export const deleteAllTransactions = (data) =>
   sendPostRequest("delete_all_transactions", data);
 export const addServiceTransaction = (data) =>

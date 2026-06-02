@@ -9,8 +9,10 @@ import {
 } from "lucide-react";
 import Snackbar from "@mui/joy/Snackbar";
 import LoadingModal from "../components/LoadingModal";
+import ReceiptModal from "../components/ReceiptModal";
 import * as api from "../services/api";
 import { formatRupiah } from "../utils/service";
+import { formatReceiptDate, formatReceiptTime } from "../utils/receipt";
 
 const initialForm = {
   pelanggan: "",
@@ -33,6 +35,7 @@ export default function ServiceTransaction({
     message: "",
     color: "success",
   });
+  const [receiptData, setReceiptData] = useState(null);
 
   const sparepartCost = Number(formData.modal_sparepart) || 0;
   const jasaPengerjaan = Number(formData.jasa_pengerjaan) || 0;
@@ -75,6 +78,40 @@ export default function ServiceTransaction({
     const res = await api.addServiceTransaction(payload);
 
     if (res?.status === "success") {
+      const receiptDate = new Date();
+      const serviceItems = [
+        ...(sparepartCost > 0
+          ? [
+              {
+                id_produk: "service-sparepart",
+                nama_produk: "Sparepart / Komponen",
+                jumlah: 1,
+                harga_satuan: sparepartCost,
+                total_harga: sparepartCost,
+                keterangan: formData.perangkat,
+              },
+            ]
+          : []),
+        {
+          id_produk: "service-jasa",
+          nama_produk: `Service ${formData.perangkat}`,
+          jumlah: 1,
+          harga_satuan: jasaPengerjaan,
+          total_harga: jasaPengerjaan,
+          keterangan: formData.keluhan || "-",
+        },
+      ];
+
+      setReceiptData({
+        billNumber: `#${String(receiptDate.getTime()).slice(-4)}`,
+        tanggal: formatReceiptDate(receiptDate),
+        jam: formatReceiptTime(receiptDate),
+        waktu: receiptDate.toLocaleString("id-ID"),
+        items: serviceItems,
+        total_harga: totalBayar,
+        ongkir: 0,
+        metode_pembayaran: formData.metode_pembayaran,
+      });
       showNotif("Transaksi service berhasil dicatat.", "success");
       onServiceSaved?.(payload);
       fetchServiceTransactions?.({ isSilent: true, refreshKey: Date.now() });
@@ -86,8 +123,26 @@ export default function ServiceTransaction({
     setLoading(false);
   };
 
+  const receiptSubtotal = Number(receiptData?.total_harga) || 0;
+  const receiptShipping = Number(receiptData?.ongkir) || 0;
+  const receiptGrandTotal = receiptSubtotal + receiptShipping;
+  const receiptItems = receiptData?.items || [];
+
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6">
+      <ReceiptModal
+        receiptData={receiptData}
+        receiptItems={receiptItems}
+        receiptSubtotal={receiptSubtotal}
+        receiptShipping={receiptShipping}
+        receiptGrandTotal={receiptGrandTotal}
+        onClose={() => setReceiptData(null)}
+        onDownloadSuccess={() =>
+          showNotif("Struk PNG berhasil diunduh.", "success")
+        }
+        onDownloadError={() => showNotif("Gagal membuat struk PNG.", "danger")}
+      />
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-fontDark flex items-center gap-2">

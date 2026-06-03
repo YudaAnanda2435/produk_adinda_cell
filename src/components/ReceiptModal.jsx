@@ -128,13 +128,13 @@ export default function ReceiptModal({
               }}
               className="mx-auto mb-1.5 h-14 w-auto object-contain grayscale"
             />
-            <h2 className="text-[30px] font-black leading-none">
+            <h2 className="text-[29px] font-bold leading-none">
               {RECEIPT_STORE_NAME}
             </h2>
-            <p className="mt-1 text-[16px] font-black leading-tight text-slate-800">
+            <p className="mt-1 text-[16px] font-medium leading-tight text-slate-800">
               {RECEIPT_TAGLINE}
             </p>
-            <div className="mt-1.5 text-[17px] font-black leading-tight text-slate-700">
+            <div className="mt-1.5 text-[17px] font-medium leading-tight text-slate-700">
               {RECEIPT_ADDRESS_LINES.map((line) => (
                 <p key={line}>{line}</p>
               ))}
@@ -142,21 +142,21 @@ export default function ReceiptModal({
             </div>
           </div>
 
-          <div className="my-2 border-t-2 border-dashed border-slate-700" />
+          <div className="my-2 border-t border-dashed border-slate-600" />
 
-          <div className="flex items-start justify-between text-[19px] font-black leading-tight">
+          <div className="flex items-start justify-between text-[18px] font-medium leading-tight">
             <span>Bill {receiptData.billNumber}</span>
             <span className="text-right">
               {receiptData.tanggal} {receiptData.jam}
             </span>
           </div>
 
-          <div className="my-2 border-t-2 border-dashed border-slate-700" />
+          <div className="my-2 border-t border-dashed border-slate-600" />
 
-          <div className="space-y-1.5 text-[19px] font-black leading-tight">
+          <div className="space-y-1.5 text-[18px] font-medium leading-tight">
             <div className="flex items-end justify-between gap-3 pt-1">
-              <span>Item x Qty</span>
-              <span>Rate</span>
+              <span className="font-semibold">Item x Qty</span>
+              <span className="font-semibold">Rate</span>
             </div>
             {receiptItems.map((item, index) => (
               <div key={`${item.id_produk}-${index}`} className="space-y-1">
@@ -169,11 +169,11 @@ export default function ReceiptModal({
                   </span>
                 </div>
                 {item.keterangan && item.keterangan !== "-" && (
-                  <div className="max-w-[230px] break-words text-[18px] text-slate-700">
+                  <div className="max-w-[230px] break-words text-[17px] text-slate-700">
                     ({item.keterangan})
                   </div>
                 )}
-                <div className="flex items-end justify-between gap-3 text-[18px] text-slate-700">
+                <div className="flex items-end justify-between gap-3 text-[17px] text-slate-700">
                   <span>
                     {item.jumlah} x {formatReceiptAmount(item.harga_satuan)}
                   </span>
@@ -183,26 +183,28 @@ export default function ReceiptModal({
             ))}
           </div>
 
-          <div className="my-2 border-t-2 border-dashed border-slate-700" />
+          <div className="my-2 border-t border-dashed border-slate-600" />
 
-          <div className="space-y-0.5 text-[20px] font-black leading-tight">
+          <div className="space-y-0.5 text-[19px] font-medium leading-tight">
             <div className="flex justify-between gap-3">
               <span>Total pesanan</span>
-              <span>{formatReceiptAmount(receiptSubtotal)}</span>
+              <span className="font-semibold">
+                {formatReceiptAmount(receiptSubtotal)}
+              </span>
             </div>
             <div className="flex justify-between gap-3">
               <span>Ongkir</span>
               <span>{formatReceiptAmount(receiptShipping)}</span>
             </div>
-            <div className="flex justify-between gap-3">
+            <div className="flex justify-between gap-3 font-semibold">
               <span>Total bayar</span>
               <span>{formatReceiptAmount(receiptGrandTotal)}</span>
             </div>
           </div>
 
-          <div className="my-2 border-t-2 border-dashed border-slate-700" />
+          <div className="my-2 border-t border-dashed border-slate-600" />
 
-          <div className="pt-1.5 text-center text-[23px] font-black tracking-wide">
+          <div className="pt-1.5 text-center text-[22px] font-semibold tracking-wide">
             TERIMA KASIH
           </div>
 

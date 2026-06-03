@@ -80,25 +80,13 @@ export default function ServiceTransaction({
     if (res?.status === "success") {
       const receiptDate = new Date();
       const serviceItems = [
-        ...(sparepartCost > 0
-          ? [
-              {
-                id_produk: "service-sparepart",
-                nama_produk: "Sparepart / Komponen",
-                jumlah: 1,
-                harga_satuan: sparepartCost,
-                total_harga: sparepartCost,
-                keterangan: formData.perangkat,
-              },
-            ]
-          : []),
         {
-          id_produk: "service-jasa",
-          nama_produk: `Service ${formData.perangkat}`,
+          id_produk: "service-include",
+          nama_produk: formData.keluhan || `Service ${formData.perangkat}`,
           jumlah: 1,
-          harga_satuan: jasaPengerjaan,
-          total_harga: jasaPengerjaan,
-          keterangan: formData.keluhan || "-",
+          harga_satuan: totalBayar,
+          total_harga: totalBayar,
+          keterangan: formData.perangkat,
         },
       ];
 

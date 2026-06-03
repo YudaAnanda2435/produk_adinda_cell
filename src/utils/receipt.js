@@ -25,7 +25,7 @@ export const formatReceiptTime = (date = new Date()) =>
   });
 
 const RECEIPT_IMAGE_WIDTH = 384;
-const RECEIPT_IMAGE_PADDING = 12;
+const RECEIPT_IMAGE_PADDING = 6;
 
 const loadReceiptImage = (src) =>
   new Promise((resolve) => {
@@ -89,8 +89,8 @@ export const createReceiptPngDataUrl = async ({
 
   const addText = (text, options = {}) => {
     const {
-      font = "700 18px Courier New",
-      lineHeight = 22,
+      font = "900 22px Courier New",
+      lineHeight = 26,
       align = "left",
       marginBottom = 0,
       maxWidth = contentWidth,
@@ -103,11 +103,11 @@ export const createReceiptPngDataUrl = async ({
 
   const addPair = (left, right, options = {}) => {
     const {
-      font = "700 16px Courier New",
-      lineHeight = 20,
+      font = "900 22px Courier New",
+      lineHeight = 26,
       marginBottom = 0,
-      leftWidth = 238,
-      rightWidth = contentWidth - 246,
+      leftWidth = 240,
+      rightWidth = contentWidth - 248,
     } = options;
     measureContext.font = font;
     const leftLines = Array.isArray(left)
@@ -129,15 +129,15 @@ export const createReceiptPngDataUrl = async ({
     y += lineCount * lineHeight + marginBottom;
   };
 
-  const addDivider = (marginY = 10) => {
+  const addDivider = (marginY = 7) => {
     y += marginY;
     commands.push({ type: "divider", y });
     y += marginY;
   };
 
   if (logo) {
-    const maxLogoWidth = 112;
-    const maxLogoHeight = 66;
+    const maxLogoWidth = 104;
+    const maxLogoHeight = 58;
     const ratio = Math.min(
       maxLogoWidth / logo.width,
       maxLogoHeight / logo.height,
@@ -145,36 +145,36 @@ export const createReceiptPngDataUrl = async ({
     const width = logo.width * ratio;
     const height = logo.height * ratio;
     commands.push({ type: "image", image: logo, width, height, y });
-    y += height + 14;
+    y += height + 10;
   }
 
   addText(RECEIPT_STORE_NAME, {
-    font: "900 32px Courier New",
-    lineHeight: 36,
+    font: "900 34px Courier New",
+    lineHeight: 38,
     align: "center",
-    marginBottom: 6,
-    maxWidth: 350,
+    marginBottom: 4,
+    maxWidth: 372,
   });
   addText(RECEIPT_TAGLINE, {
-    font: "800 17px Courier New",
-    lineHeight: 21,
+    font: "900 19px Courier New",
+    lineHeight: 23,
     align: "center",
-    marginBottom: 6,
-    maxWidth: 350,
+    marginBottom: 4,
+    maxWidth: 372,
   });
   RECEIPT_ADDRESS_LINES.forEach((line) =>
     addText(line, {
-      font: "800 18px Courier New",
-      lineHeight: 22,
+      font: "900 20px Courier New",
+      lineHeight: 23,
       align: "center",
-      maxWidth: 350,
+      maxWidth: 372,
     }),
   );
   addText(RECEIPT_CONTACT, {
-    font: "800 18px Courier New",
-    lineHeight: 22,
+    font: "900 20px Courier New",
+    lineHeight: 23,
     align: "center",
-    maxWidth: 350,
+    maxWidth: 372,
   });
 
   addDivider();
@@ -182,65 +182,75 @@ export const createReceiptPngDataUrl = async ({
     ["Bill", receiptData.billNumber],
     [receiptData.tanggal, receiptData.jam],
     {
-      font: "800 19px Courier New",
-      lineHeight: 23,
+      font: "900 22px Courier New",
+      lineHeight: 26,
+      leftWidth: 128,
+      rightWidth: 210,
     },
   );
   addDivider();
   addPair("Item x Qty", "Rate", {
-    font: "900 20px Courier New",
-    lineHeight: 24,
-    marginBottom: 6,
+    font: "900 23px Courier New",
+    lineHeight: 27,
+    marginBottom: 5,
+    leftWidth: 230,
+    rightWidth: 116,
   });
 
   receiptItems.forEach((item) => {
     addPair(item.nama_produk, formatReceiptAmount(item.total_harga), {
-      font: "800 19px Courier New",
-      lineHeight: 23,
-      marginBottom: item.keterangan && item.keterangan !== "-" ? 0 : 4,
-      leftWidth: 250,
-      rightWidth: 108,
+      font: "900 22px Courier New",
+      lineHeight: 26,
+      marginBottom: item.keterangan && item.keterangan !== "-" ? 0 : 3,
+      leftWidth: 242,
+      rightWidth: 120,
     });
     if (item.keterangan && item.keterangan !== "-") {
       addText(`(${item.keterangan})`, {
-        font: "800 18px Courier New",
-        lineHeight: 21,
-        marginBottom: 2,
-        maxWidth: 250,
+        font: "900 21px Courier New",
+        lineHeight: 24,
+        marginBottom: 1,
+        maxWidth: 242,
       });
     }
     addPair(
       `${item.jumlah} x ${formatReceiptAmount(item.harga_satuan)}`,
       formatReceiptAmount(item.total_harga),
       {
-        font: "800 18px Courier New",
-        lineHeight: 22,
-        marginBottom: 6,
-        leftWidth: 235,
-        rightWidth: 108,
+        font: "900 21px Courier New",
+        lineHeight: 25,
+        marginBottom: 5,
+        leftWidth: 236,
+        rightWidth: 120,
       },
     );
   });
 
   addDivider();
   addPair("Total pesanan", formatReceiptAmount(receiptSubtotal), {
-    font: "900 20px Courier New",
-    lineHeight: 24,
+    font: "900 23px Courier New",
+    lineHeight: 27,
+    leftWidth: 232,
+    rightWidth: 126,
   });
   addPair("Ongkir", formatReceiptAmount(receiptShipping), {
-    font: "900 20px Courier New",
-    lineHeight: 24,
+    font: "900 23px Courier New",
+    lineHeight: 27,
+    leftWidth: 232,
+    rightWidth: 126,
   });
   addPair("Total bayar", formatReceiptAmount(receiptGrandTotal), {
-    font: "900 20px Courier New",
-    lineHeight: 24,
+    font: "900 23px Courier New",
+    lineHeight: 27,
+    leftWidth: 232,
+    rightWidth: 126,
   });
   addDivider();
   addText("TERIMA KASIH", {
-    font: "900 22px Courier New",
-    lineHeight: 28,
+    font: "900 26px Courier New",
+    lineHeight: 31,
     align: "center",
-    marginBottom: 10,
+    marginBottom: 8,
   });
 
   const canvas = document.createElement("canvas");
@@ -252,7 +262,7 @@ export const createReceiptPngDataUrl = async ({
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = "#000000";
   context.strokeStyle = "#000000";
-  context.lineWidth = 1;
+  context.lineWidth = 2;
 
   commands.forEach((command) => {
     if (command.type === "image") {

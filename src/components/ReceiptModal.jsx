@@ -94,7 +94,7 @@ export default function ReceiptModal({
             max-width: 58mm !important;
             min-height: 0 !important;
             margin: 0 !important;
-            padding: 3mm 2mm !important;
+            padding: 2mm 1.2mm !important;
             box-shadow: none !important;
             border: none !important;
             border-radius: 0 !important;
@@ -113,7 +113,7 @@ export default function ReceiptModal({
       <div className="receipt-preview-shell fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm print:static print:block print:bg-white print:p-0">
         <div
           id="receipt-box"
-          className="w-[340px] bg-[#faf8ef] px-4 py-5 text-slate-900 shadow-2xl animate-in zoom-in-95 duration-200 print:w-[58mm] print:bg-white print:shadow-none"
+          className="w-[348px] bg-[#faf8ef] px-2.5 py-4 text-slate-900 shadow-2xl animate-in zoom-in-95 duration-200 print:w-[58mm] print:bg-white print:shadow-none"
           style={{
             fontFamily:
               '"Courier New", "Lucida Console", "Roboto Mono", monospace',
@@ -126,15 +126,15 @@ export default function ReceiptModal({
               onError={(event) => {
                 event.currentTarget.style.display = "none";
               }}
-              className="mx-auto mb-2 h-16 w-auto object-contain grayscale"
+              className="mx-auto mb-1.5 h-14 w-auto object-contain grayscale"
             />
-            <h2 className="text-[27px] font-black leading-none tracking-[0.06em]">
+            <h2 className="text-[30px] font-black leading-none">
               {RECEIPT_STORE_NAME}
             </h2>
-            <p className="mt-1 text-[14px] font-extrabold leading-tight text-slate-800">
+            <p className="mt-1 text-[16px] font-black leading-tight text-slate-800">
               {RECEIPT_TAGLINE}
             </p>
-            <div className="mt-2 text-[15px] font-extrabold leading-tight text-slate-700">
+            <div className="mt-1.5 text-[17px] font-black leading-tight text-slate-700">
               {RECEIPT_ADDRESS_LINES.map((line) => (
                 <p key={line}>{line}</p>
               ))}
@@ -142,18 +142,18 @@ export default function ReceiptModal({
             </div>
           </div>
 
-          <div className="my-2.5 border-t border-dashed border-slate-500" />
+          <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="flex items-start justify-between text-[16px] font-extrabold leading-tight">
+          <div className="flex items-start justify-between text-[19px] font-black leading-tight">
             <span>Bill {receiptData.billNumber}</span>
             <span className="text-right">
               {receiptData.tanggal} {receiptData.jam}
             </span>
           </div>
 
-          <div className="my-2.5 border-t border-dashed border-slate-500" />
+          <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="space-y-2 text-[16px] font-extrabold leading-tight">
+          <div className="space-y-1.5 text-[19px] font-black leading-tight">
             <div className="flex items-end justify-between gap-3 pt-1">
               <span>Item x Qty</span>
               <span>Rate</span>
@@ -161,7 +161,7 @@ export default function ReceiptModal({
             {receiptItems.map((item, index) => (
               <div key={`${item.id_produk}-${index}`} className="space-y-1">
                 <div className="flex items-end justify-between gap-3">
-                  <span className="max-w-[220px] break-words">
+                  <span className="max-w-[230px] break-words">
                     {item.nama_produk}
                   </span>
                   <span className="shrink-0">
@@ -169,11 +169,11 @@ export default function ReceiptModal({
                   </span>
                 </div>
                 {item.keterangan && item.keterangan !== "-" && (
-                  <div className="max-w-[220px] break-words text-slate-700">
+                  <div className="max-w-[230px] break-words text-[18px] text-slate-700">
                     ({item.keterangan})
                   </div>
                 )}
-                <div className="flex items-end justify-between gap-3 text-slate-700">
+                <div className="flex items-end justify-between gap-3 text-[18px] text-slate-700">
                   <span>
                     {item.jumlah} x {formatReceiptAmount(item.harga_satuan)}
                   </span>
@@ -183,9 +183,9 @@ export default function ReceiptModal({
             ))}
           </div>
 
-          <div className="my-2.5 border-t border-dashed border-slate-500" />
+          <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="space-y-1 text-[17px] font-black leading-tight">
+          <div className="space-y-0.5 text-[20px] font-black leading-tight">
             <div className="flex justify-between gap-3">
               <span>Total pesanan</span>
               <span>{formatReceiptAmount(receiptSubtotal)}</span>
@@ -200,9 +200,9 @@ export default function ReceiptModal({
             </div>
           </div>
 
-          <div className="my-2.5 border-t border-dashed border-slate-500" />
+          <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="pt-2 text-center text-[18px] font-black tracking-wider">
+          <div className="pt-1.5 text-center text-[23px] font-black tracking-wide">
             TERIMA KASIH
           </div>
 

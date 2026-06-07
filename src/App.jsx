@@ -44,6 +44,12 @@ const mergeLocalTransactions = (serverTransactions, localTransactions) => {
   return [...pendingLocal, ...serverData];
 };
 
+const resetDocumentScroll = () => {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+};
+
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem("isLoggedIn") === "true",
@@ -233,6 +239,19 @@ export default function App() {
     if (isLoggedIn) fetchProducts(userRole === "admin");
   }, [fetchProducts, isLoggedIn, userRole]);
 
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    resetDocumentScroll();
+    const frameId = window.requestAnimationFrame(resetDocumentScroll);
+    const timeoutId = window.setTimeout(resetDocumentScroll, 250);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [isLoggedIn, activeTab]);
+
   // useEffect(() => {
   //   if (!isLoggedIn) return;
 
@@ -374,7 +393,7 @@ export default function App() {
           <p className="text-sm text-blue-400 capitalize">{userRole}</p>
         </div>
 
-        <nav className="flex-1 pl-4 space-y-2 md:space-y-4 mt-4 md:mt-0">
+        <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain pl-4 space-y-2 md:space-y-4 mt-4 md:mt-0 [-webkit-overflow-scrolling:touch]">
           {userRole === "admin" && (
             <button
               onClick={() => handleNavigation("dashboard")}

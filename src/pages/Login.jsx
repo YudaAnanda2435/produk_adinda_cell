@@ -33,10 +33,11 @@ export default function Login({ onLoginSuccess }) {
       setSnackbarColor("success");
       setOpenSnackbar(true);
 
-      // Beri jeda 1.5 detik agar notifikasi sukses terbaca sebelum pindah halaman
-      setTimeout(() => {
+      // Tutup keyboard mobile sebelum layout aplikasi utama ditampilkan.
+      document.activeElement?.blur();
+      window.requestAnimationFrame(() => {
         onLoginSuccess(res.role, formData.username);
-      }, 1500);
+      });
     } else {
       setSnackbarMessage(res.message);
       setSnackbarColor("danger");

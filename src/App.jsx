@@ -8,7 +8,6 @@ import {
   LogOut,
   Menu,
   X,
-  MessageCircle,
   ChevronDown,
   BarChart3,
   ClipboardList,
@@ -18,9 +17,9 @@ import {
 } from "lucide-react";
 import { DashboardSkeleton, TableSkeleton } from "./components/Skeleton";
 import ConfirmModal from "./components/ConfirmModal";
-import Login from "./pages/Login";
 import * as api from "./services/api";
 
+const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Products = lazy(() => import("./pages/Products"));
 const Kasir = lazy(() => import("./pages/Kasir"));
@@ -28,7 +27,6 @@ const Riwayat = lazy(() => import("./pages/Riwayat"));
 const ServiceDashboard = lazy(() => import("./pages/ServiceDashboard"));
 const ServiceTransaction = lazy(() => import("./pages/ServiceTransaction"));
 const ServiceHistory = lazy(() => import("./pages/ServiceHistory"));
-const AiAssistant = lazy(() => import("./components/AiAssistant"));
 
 const isSameTransaction = (a, b) =>
   String(a.nama_produk || "") === String(b.nama_produk || "") &&
@@ -61,7 +59,7 @@ export default function App() {
     localStorage.getItem("userRole") === "admin" ? "dashboard" : "kasir",
   );
 
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(() => api.getCachedProducts());
   const [transactions, setTransactions] = useState([]);
   const [, setLocalTransactions] = useState([]);
   const localTransactionsRef = useRef([]);
@@ -74,7 +72,6 @@ export default function App() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
-  const [shouldLoadAiAssistant, setShouldLoadAiAssistant] = useState(false);
 
   // --- TAMBAHAN: STATE UNTUK DARK MODE ---
   const [isDarkMode, setIsDarkMode] = useState(
@@ -233,26 +230,26 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (isLoggedIn) fetchProducts();
-  }, [fetchProducts, isLoggedIn]);
+    if (isLoggedIn) fetchProducts(userRole === "admin");
+  }, [fetchProducts, isLoggedIn, userRole]);
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  // useEffect(() => {
+  //   if (!isLoggedIn) return;
 
-    const canAnimate =
-      window.matchMedia("(min-width: 768px)").matches &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  //   const canAnimate =
+  //     window.matchMedia("(min-width: 768px)").matches &&
+  //     !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (!canAnimate) return;
+  //   if (!canAnimate) return;
 
-    Promise.all([import("aos"), import("aos/dist/aos.css")]).then(([AOS]) => {
-      AOS.default.init({
-        duration: 700,
-        once: true,
-        offset: 50,
-      });
-    });
-  }, [isLoggedIn]);
+  //   Promise.all([import("aos"), import("aos/dist/aos.css")]).then(([AOS]) => {
+  //     AOS.default.init({
+  //       duration: 700,
+  //       once: true,
+  //       offset: 50,
+  //     });
+  //   });
+  // }, [isLoggedIn]);
 
   const tabFallback =
     activeTab === "dashboard" ? <DashboardSkeleton /> : <TableSkeleton />;
@@ -291,7 +288,17 @@ export default function App() {
   const serviceMenuIsActive = activeTab.startsWith("service-");
 
   if (!isLoggedIn) {
-    return <Login onLoginSuccess={handleLogin} />;
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-slate-900 flex items-center justify-center text-sm font-bold text-white">
+            Memuat halaman masuk...
+          </div>
+        }
+      >
+        <Login onLoginSuccess={handleLogin} />
+      </Suspense>
+    );
   }
 
 
@@ -618,14 +625,12 @@ export default function App() {
             )}
             {activeTab === "dashboard" &&
               userRole === "admin" &&
-              (isProductsLoading ? (
-                <DashboardSkeleton />
-              ) : (
+              (
                 <Dashboard
                   products={products}
                   dataVersion={transactionsRefreshKey}
                 />
-              ))}
+              )}
             {activeTab === "riwayat" && userRole === "admin" && (
               <Riwayat
                 transactions={transactions}
@@ -638,7 +643,7 @@ export default function App() {
             )}
             {activeTab === "products" &&
               userRole === "admin" &&
-              (isProductsLoading ? (
+              (isProductsLoading && products.length === 0 ? (
                 <TableSkeleton />
               ) : (
                 <Products
@@ -650,20 +655,6 @@ export default function App() {
           </>
         </Suspense>
       </main>
-
-      {shouldLoadAiAssistant ? (
-        <Suspense fallback={null}>
-          <AiAssistant initialOpen />
-        </Suspense>
-      ) : (
-        <button
-          onClick={() => setShouldLoadAiAssistant(true)}
-          className="fixed bottom-6 right-6 z-9999 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-transform duration-300 hover:scale-110 active:scale-90"
-          title="Buka Asisten Cell AI"
-        >
-          <MessageCircle size={28} />
-        </button>
-      )}
 
       <ConfirmModal
         open={isLogoutModalOpen}

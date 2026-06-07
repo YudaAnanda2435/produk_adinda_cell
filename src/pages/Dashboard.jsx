@@ -9,9 +9,11 @@ import {
   Layers,
   Calendar,
 } from "lucide-react";
-import { BarChart } from "@mui/x-charts/BarChart";
-import { PieChart } from "@mui/x-charts/PieChart";
 import * as api from "../services/api";
+import {
+  SimpleBarChart,
+  SimpleDonutChart,
+} from "../components/LightweightCharts";
 
 let hasPlayedDashboardCountAnimation = false;
 
@@ -68,23 +70,6 @@ const AnimatedNumber = ({
   return <>{formatter ? formatter(value) : value}</>;
 };
 
-const useReducedDashboardMotion = () => {
-  const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia(
-      "(max-width: 767px), (prefers-reduced-motion: reduce)",
-    );
-    const update = () => setShouldReduceMotion(query.matches);
-
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-
-  return shouldReduceMotion;
-};
-
 const DashboardCard = ({ title, value, icon, colorClass, subtitle }) => (
   <div className="bg-white dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-darkMode flex items-center space-x-4 transition-all hover:shadow-md">
     <div className={`p-4 rounded-xl ${colorClass} shadow-sm`}>{icon}</div>
@@ -106,27 +91,30 @@ const DashboardCard = ({ title, value, icon, colorClass, subtitle }) => (
 
 const Dashboard = ({ products = [], dataVersion = 0 }) => {
   const hariIni = new Date().toISOString().split("T")[0];
-  const shouldReduceMotion = useReducedDashboardMotion();
   const [shouldAnimateCounts] = useState(() => {
     if (hasPlayedDashboardCountAnimation) return false;
     hasPlayedDashboardCountAnimation = true;
     return true;
   });
-  const [summary, setSummary] = useState({
-    unitTerjual: 0,
-    labaBersih: 0,
-    omzetTotal: 0,
-    barChartData: [],
-  });
-  const [summaryLoading, setSummaryLoading] = useState(false);
 
-// --- PERUBAHAN: Baca memori browser untuk state awal ---
-const [startDate, setStartDate] = useState(() => {
-  return localStorage.getItem("dashboardStartDate") || hariIni;
-});
-const [endDate, setEndDate] = useState(() => {
-  return localStorage.getItem("dashboardEndDate") || hariIni;
-});
+  // --- PERUBAHAN: Baca memori browser untuk state awal ---
+  const [startDate, setStartDate] = useState(() => {
+    return localStorage.getItem("dashboardStartDate") || hariIni;
+  });
+  const [endDate, setEndDate] = useState(() => {
+    return localStorage.getItem("dashboardEndDate") || hariIni;
+  });
+  const [summary, setSummary] = useState(
+    () =>
+      api.getCachedDashboardSummary({ startDate, endDate }) || {
+        unitTerjual: 0,
+        labaBersih: 0,
+        omzetTotal: 0,
+        barChartData: [],
+      },
+  );
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [shouldRenderCharts, setShouldRenderCharts] = useState(false);
   const [isDateOpen, setIsDateOpen] = useState(false);
   useEffect(() => {
     localStorage.setItem("dashboardStartDate", startDate);
@@ -137,7 +125,18 @@ const [endDate, setEndDate] = useState(() => {
     let isActive = true;
 
     const loadSummary = async () => {
-      setSummaryLoading(true);
+      const cachedSummary = api.getCachedDashboardSummary({
+        startDate,
+        endDate,
+      });
+
+      if (cachedSummary) {
+        setSummary(cachedSummary);
+        setSummaryLoading(false);
+      } else {
+        setSummaryLoading(true);
+      }
+
       const data = await api.getDashboardSummary({
         startDate,
         endDate,
@@ -154,6 +153,17 @@ const [endDate, setEndDate] = useState(() => {
       isActive = false;
     };
   }, [dataVersion, startDate, endDate]);
+
+  useEffect(() => {
+    const schedule =
+      window.requestIdleCallback ||
+      ((callback) => window.setTimeout(callback, 250));
+    const cancel =
+      window.cancelIdleCallback || ((id) => window.clearTimeout(id));
+
+    const taskId = schedule(() => setShouldRenderCharts(true));
+    return () => cancel(taskId);
+  }, []);
 
   const productStats = useMemo(() => {
     const totalJenis = products.length;
@@ -215,17 +225,17 @@ const [endDate, setEndDate] = useState(() => {
         <div>
           <h1
             className="text-2xl font-bold text-gray-800 dark:text-fontDark"
-            data-aos="zoom-in"
-            data-aos-delay="400"
-            data-aos-duration="800"
+            // data-aos="zoom-in"
+            // data-aos-delay="400"
+            // data-aos-duration="800"
           >
             Analisis Penjualan
           </h1>
           <p
             className="text-sm text-gray-500 dark:text-gray-400"
-            data-aos="zoom-in"
-            data-aos-delay="400"
-            data-aos-duration="800"
+            // data-aos="zoom-in"
+            // data-aos-delay="400"
+            // data-aos-duration="800"
           >
             Pantau performa konter Anda secara real-time.
           </p>
@@ -390,9 +400,9 @@ const [endDate, setEndDate] = useState(() => {
         <div className="lg:col-span-2 bg-white dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex flex-col w-full min-h-[350px]">
           <h3
             className="text-sm font-bold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4"
-            data-aos="zoom-in"
-            data-aos-delay="400"
-            data-aos-duration="800"
+            // data-aos="zoom-in"
+            // data-aos-delay="400"
+            // data-aos-duration="800"
           >
             Grafik Omzet ({periodeLabel})
           </h3>
@@ -406,35 +416,22 @@ const [endDate, setEndDate] = useState(() => {
               <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
                 Memuat ringkasan omzet...
               </div>
+            ) : !shouldRenderCharts ? (
+              <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
+                Menyiapkan grafik...
+              </div>
             ) : barChartData.length > 0 ? (
-              <BarChart
-                dataset={barChartData}
-                xAxis={[{ scaleType: "band", dataKey: "label" }]}
-                // 1. TAMBAHKAN yAxis INI UNTUK MENYINGKAT ANGKA (Misal: 2 Jt, 500 Rb)
-                yAxis={[
-                  {
-                    valueFormatter: (value) => {
-                      if (value === 0) return "0";
-                      if (value >= 1000000) return `${value / 1000000} Jt`;
-                      if (value >= 1000) return `${value / 1000} Rb`;
-                      return String(value);
-                    },
-                  },
-                ]}
+              <SimpleBarChart
+                data={barChartData}
                 series={[
                   {
                     dataKey: "omzet",
                     label: "Omzet",
                     color: "#2563eb",
-                    // valueFormatter ini tetap formatRupiah agar saat di-hover/disentuh kursor, nominal aslinya tetap muncul lengkap
                     valueFormatter: (value) => formatRupiah(value),
                   },
                 ]}
-                height={300}
-                skipAnimation={shouldReduceMotion}
-                slotProps={{ legend: { hidden: true } }}
-                // 2. PERKECIL MARGIN KIRI (left) MENJADI 45 AGAR MAKSIMAL MERAPAT
-                margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
+                emptyMessage="Belum ada transaksi di periode ini."
               />
             ) : (
               <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
@@ -448,44 +445,19 @@ const [endDate, setEndDate] = useState(() => {
         <div className="bg-white dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex flex-col min-h-[350px]">
           <h3
             className="text-sm font-bold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4"
-            data-aos="zoom-in"
-            data-aos-delay="400"
-            data-aos-duration="800"
+            // data-aos="zoom-in"
+            // data-aos-delay="400"
+            // data-aos-duration="800"
           >
             Komposisi Stok Gudang
           </h3>
           <div className="flex-1 w-full flex flex-col items-center justify-center bg-white dark:bg-cardDark rounded-xl p-2">
-            {pieChartData.length > 0 ? (
-              <>
-                <div>
-                  <PieChart
-                    series={[
-                      {
-                        data: pieChartData,
-                        innerRadius: 45,
-                        outerRadius: 90,
-                        paddingAngle: 2,
-                        cornerRadius: 4,
-                      },
-                    ]}
-                    width={250} // KUNCI AGAR GRAFIK MUNCUL
-                    height={200}
-                    skipAnimation={shouldReduceMotion}
-                    slotProps={{ legend: { hidden: true } }}
-                    margin={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  />
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                  {pieChartData.slice(0, 4).map((item) => (
-                    <div
-                      key={item.id}
-                      className="text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded-md"
-                    >
-                      {item.label}: {item.value}
-                    </div>
-                  ))}
-                </div>
-              </>
+            {!shouldRenderCharts ? (
+              <div className="text-gray-400 text-sm font-medium">
+                Menyiapkan grafik...
+              </div>
+            ) : pieChartData.length > 0 ? (
+              <SimpleDonutChart data={pieChartData} />
             ) : (
               <div className="text-gray-400 text-sm font-medium">
                 Belum ada produk.

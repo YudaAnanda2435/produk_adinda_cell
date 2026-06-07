@@ -14,6 +14,38 @@ const buildUrl = (params = {}) => {
   return url.toString();
 };
 
+const CACHE_PREFIX = "adinda-cache:";
+const CACHE_TTL = 5 * 60 * 1000;
+const LONG_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+const readCache = (key, maxAge = CACHE_TTL) => {
+  try {
+    const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw);
+    if (!cached || Date.now() - cached.timestamp > maxAge) return null;
+
+    return cached.data;
+  } catch {
+    return null;
+  }
+};
+
+const writeCache = (key, data) => {
+  try {
+    localStorage.setItem(
+      `${CACHE_PREFIX}${key}`,
+      JSON.stringify({ timestamp: Date.now(), data }),
+    );
+  } catch {
+    // Cache adalah optimasi. Kalau storage penuh/ditolak, request utama tetap jalan.
+  }
+};
+
+const dashboardCacheKey = ({ startDate, endDate } = {}) =>
+  `dashboard-summary:${startDate || ""}:${endDate || ""}`;
+
 const normalizeArrayResponse = (payload) => {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
@@ -137,13 +169,18 @@ const normalizeDashboardSummary = (payload) => {
 
 export const getProducts = async () => {
   try {
-    const response = await fetch(API_URL, { cache: "no-store" });
-    return normalizeArrayResponse(await response.json());
+    const response = await fetch(API_URL);
+    const products = normalizeArrayResponse(await response.json());
+    writeCache("products", products);
+    return products;
   } catch (error) {
     console.error("Gagal mengambil data", error);
-    return [];
+    return getCachedProducts();
   }
 };
+
+export const getCachedProducts = () =>
+  normalizeArrayResponse(readCache("products", LONG_CACHE_TTL));
 
 const sendPostRequest = async (action, data) => {
   try {
@@ -225,17 +262,26 @@ export const getDashboardSummary = async ({
         endDate,
         refresh: refreshKey,
       }),
-      { cache: "no-store" },
     );
     const summary = normalizeDashboardSummary(await response.json());
-    if (summary) return summary;
+    if (summary) {
+      writeCache(dashboardCacheKey({ startDate, endDate }), summary);
+      return summary;
+    }
   } catch (error) {
     console.warn("Endpoint ringkasan dashboard belum tersedia.", error);
   }
 
   const transactions = await getTransactions({ startDate, endDate, refreshKey });
-  return calculateDashboardSummary(transactions, startDate, endDate);
+  const summary = calculateDashboardSummary(transactions, startDate, endDate);
+  writeCache(dashboardCacheKey({ startDate, endDate }), summary);
+  return summary;
 };
+
+export const getCachedDashboardSummary = ({ startDate, endDate } = {}) =>
+  normalizeDashboardSummary(
+    readCache(dashboardCacheKey({ startDate, endDate }), CACHE_TTL),
+  );
 
 export const loginUser = (data) => sendPostRequest("login", data);
 export const addProduct = (data) => sendPostRequest("create", data);

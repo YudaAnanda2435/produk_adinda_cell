@@ -1,18 +1,12 @@
 import { useState } from "react";
-import { Lock, User, LogIn, CheckCircle2, AlertCircle } from "lucide-react";
+import { Lock, User, LogIn, CheckCircle2, AlertCircle } from 
+  "lucide-react";
+import Swiper1 from "../assets/swiper1.avif"
 import * as api from "../services/api";
 
 // Impor komponen Joy UI
 import Snackbar from "@mui/joy/Snackbar";
 import LinearProgress from "@mui/joy/LinearProgress";
-
-// Impor modul Swiper React
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay } from "swiper/modules";
-
-// Impor gaya dasar Swiper
-import "swiper/css";
-import "swiper/css/pagination";
 
 export default function Login({ onLoginSuccess }) {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -51,90 +45,36 @@ export default function Login({ onLoginSuccess }) {
     }
   };
 
-  const sliderContent = [
-    {
-      title: "Kendalikan Konter Anda!",
-      desc: "Pencatatan otomatis, anti ribet. Laba bersih dan omzet harian langsung terlihat di layar Anda.",
-      img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      title: "Stok Selalu Akurat",
-      desc: "Lacak ketersediaan LCD, baterai, dan suku cadang lainnya. Sistem memberi peringatan saat stok menipis.",
-      img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      title: "Keamanan Data Terjamin",
-      desc: "Riwayat penjualan dan modal tersimpan aman di server awan. Akses laporan dari mana saja, kapan saja.",
-      img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1470&auto=format&fit=crop",
-    },
-  ];
-
   return (
     <>
-      <style>{`
-        .swiper-pagination {
-          text-align: center !important;
-          bottom: 2.5rem !important;
-        }
-        @media (min-width: 768px) {
-          .swiper-pagination {
-            bottom: 4.5rem !important;
-          }
-        }
-        .swiper-pagination-bullet {
-          width: 8px !important;
-          height: 8px !important;
-          background-color: rgba(255, 255, 255, 0.4) !important;
-          border-radius: 9999px;
-          opacity: 1 !important;
-          margin: 0 4px !important;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; 
-        }
-        .swiper-pagination-bullet-active {
-          width: 32px !important; 
-          background-color: #ffffff !important;
-          box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-      `}</style>
-
       <div className="min-h-screen relative flex flex-col md:flex-row-reverse bg-slate-900 overflow-hidden">
         <div className="w-full md:w-1/2 h-72 md:h-screen relative bg-blue-900">
-          <Swiper
-            modules={[Pagination, Autoplay]}
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            loop={true}
-            speed={800}
-            className="w-full h-full"
-          >
-            {sliderContent.map((slide, index) => (
-              <SwiperSlide key={index}>
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <img
-                    src={slide.img}
-                    alt={slide.title}
-                    className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+          <img
+            src={Swiper1}
+            alt="Sistem POS terpadu untuk konter Adinda Cell"
+            width="1440"
+            height="1080"
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
 
-                  <div className="relative z-10 p-8 md:p-16 flex flex-col items-start justify-center h-full w-full mx-auto pb-16 md:pb-24">
-                    <div className="flex items-center gap-2 bg-blue-600/30 backdrop-blur-md px-3 py-1.5 rounded-full mb-4 border border-blue-400/30">
-                      <CheckCircle2 size={14} className="text-blue-300" />
-                      <span className="text-xs font-bold text-blue-100 tracking-wider uppercase">
-                        Sistem POS Terpadu
-                      </span>
-                    </div>
-                    <h2 className="text-2xl md:text-4xl font-black text-white mb-3 leading-tight">
-                      {slide.title}
-                    </h2>
-                    <p className="text-sm md:text-base text-blue-100 font-medium leading-relaxed opacity-90">
-                      {slide.desc}
-                    </p>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          <div className="relative z-10 p-8 md:p-16 flex flex-col items-start justify-center h-full w-full mx-auto pb-16 md:pb-24">
+            <div className="flex items-center gap-2 bg-blue-600/30 backdrop-blur-md px-3 py-1.5 rounded-full mb-4 border border-blue-400/30">
+              <CheckCircle2 size={14} className="text-blue-300" />
+              <span className="text-xs font-bold text-blue-100 tracking-wider uppercase">
+                Sistem POS Terpadu
+              </span>
+            </div>
+            <h2 className="text-2xl md:text-4xl font-black text-white mb-3 leading-tight">
+              Kendalikan Konter Anda!
+            </h2>
+            <p className="text-sm md:text-base text-blue-100 font-medium leading-relaxed opacity-90">
+              Pencatatan otomatis, anti ribet. Laba bersih dan omzet harian
+              langsung terlihat di layar Anda.
+            </p>
+          </div>
         </div>
 
         <div className="w-full md:w-1/2 flex items-center justify-center px-6 md:p-12 min-h-[calc(100vh-18rem)] pb-4 md:min-h-screen relative">

@@ -7,7 +7,7 @@ import {
   Wallet,
   Wrench,
 } from "lucide-react";
-import { BarChart } from "@mui/x-charts/BarChart";
+import { SimpleBarChart } from "../components/LightweightCharts";
 import {
   filterServiceByDate,
   formatDateLabel,
@@ -74,6 +74,7 @@ export default function ServiceDashboard({
     () => localStorage.getItem("serviceDashboardEndDate") || defaultRange.end,
   );
   const [isDateOpen, setIsDateOpen] = useState(false);
+  const [shouldRenderCharts, setShouldRenderCharts] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("serviceDashboardStartDate", startDate);
@@ -83,6 +84,16 @@ export default function ServiceDashboard({
   useEffect(() => {
     fetchServiceTransactions?.({ startDate, endDate, refreshKey });
   }, [endDate, fetchServiceTransactions, refreshKey, startDate]);
+
+  useEffect(() => {
+    const schedule =
+      window.requestIdleCallback || ((callback) => window.setTimeout(callback, 250));
+    const cancel =
+      window.cancelIdleCallback || ((id) => window.clearTimeout(id));
+
+    const taskId = schedule(() => setShouldRenderCharts(true));
+    return () => cancel(taskId);
+  }, []);
 
   const filteredServices = useMemo(
     () => filterServiceByDate(serviceTransactions, startDate, endDate),
@@ -222,19 +233,13 @@ export default function ServiceDashboard({
               <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
                 Memuat laporan service...
               </div>
+            ) : !shouldRenderCharts ? (
+              <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
+                Menyiapkan grafik...
+              </div>
             ) : chartData.length > 0 ? (
-              <BarChart
-                dataset={chartData}
-                xAxis={[{ scaleType: "band", dataKey: "label" }]}
-                yAxis={[
-                  {
-                    valueFormatter: (value) => {
-                      if (value >= 1000000) return `${value / 1000000} Jt`;
-                      if (value >= 1000) return `${value / 1000} Rb`;
-                      return String(value);
-                    },
-                  },
-                ]}
+              <SimpleBarChart
+                data={chartData}
                 series={[
                   {
                     dataKey: "totalBayar",
@@ -249,8 +254,7 @@ export default function ServiceDashboard({
                     valueFormatter: formatRupiah,
                   },
                 ]}
-                height={300}
-                margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
+                emptyMessage="Belum ada transaksi service pada periode ini."
               />
             ) : (
               <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">

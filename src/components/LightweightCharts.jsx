@@ -51,14 +51,29 @@ export const SimpleBarChart = ({
             <div
               key={item.date || item.label || index}
               className="flex h-full min-w-0 flex-col justify-end gap-2"
+              style={{
+                borderLeft:
+                  index > 0
+                    ? '1px solid rgba(148,163,184,0.35)'
+                    : 'none',
+              }}
               title={series
                 .map(
                   (serie) =>
                     `${serie.label}: ${serie.valueFormatter ? serie.valueFormatter(item[serie.dataKey]) : item[serie.dataKey]}`,
                 )
-                .join("\n")}
+                .join('\n')}
             >
-              <div className="flex min-h-0 flex-1 items-end justify-center gap-1 rounded-t-lg bg-slate-100/70 px-1 pt-3 dark:bg-slate-800/60">
+              {/* Bar track with horizontal grid lines */}
+              <div className="relative flex min-h-0 flex-1 items-end justify-center gap-1 rounded-t-lg bg-slate-100/70 px-1 pt-3 dark:bg-slate-800/60">
+                {/* Horizontal grid lines overlay (every 25%) */}
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-t-lg"
+                  style={{
+                    backgroundImage:
+                      'repeating-linear-gradient(to bottom, rgba(148,163,184,0.4) 0px, rgba(148,163,184,0.4) 1px, transparent 1px, transparent 25%)',
+                  }}
+                />
                 {series.map((serie) => {
                   const value = Number(item[serie.dataKey]) || 0;
                   const percent = Math.max(3, (value / maxValue) * 100);
@@ -66,7 +81,7 @@ export const SimpleBarChart = ({
                   return (
                     <div
                       key={serie.dataKey}
-                      className="w-full  rounded-t-md transition-[height] duration-300"
+                      className="relative z-10 w-full rounded-t-md transition-[height] duration-300"
                       style={{
                         height: `${percent}%`,
                         backgroundColor: serie.color,

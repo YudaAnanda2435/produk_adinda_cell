@@ -325,7 +325,7 @@ export default function App() {
     // TAMBAHAN: dark:bg-slate-950 dark:text-gray-100 pada container utama
     <div className="h-screen [height:100dvh] overflow-hidden bg-gray-50 dark:bg-slate-950 flex flex-col md:flex-row font-helvetica text-gray-800 dark:text-gray-100 transition-colors duration-300">
       {/* Header Mobile */}
-      <div className="md:hidden flex items-center justify-between bg-slate-900 dark:bg-black text-white p-4 pr-20 shadow-md z-20 shrink-0 transition-colors duration-300">
+      <div className="md:hidden font-default flex items-center justify-between bg-slate-900 dark:bg-black text-white p-4 pr-20 shadow-md z-20 shrink-0 transition-colors duration-300">
         <div className="flex items-center gap-2">
           <Package className="text-blue-400" size={24} />
           <h1 className="text-lg font-bold tracking-wider">Adinda Cell</h1>
@@ -367,7 +367,7 @@ export default function App() {
       >
         <div className="p-6 hidden md:flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold tracking-wider flex items-center">
+            <h2 className="text-xl font-bold font-normal tracking-wider font-default flex items-center">
               <Package className="mr-3 text-blue-400" /> Adinda Cell
             </h2>
             <p className="text-slate-400 text-[10px] uppercase tracking-widest mt-1 font-semibold">
@@ -393,7 +393,7 @@ export default function App() {
           <p className="text-sm text-blue-400 capitalize">{userRole}</p>
         </div>
 
-        <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain pl-4 space-y-2 md:space-y-4 mt-4 md:mt-0 [-webkit-overflow-scrolling:touch]">
+        <nav className="min-h-0 flex-1 font-default overflow-y-auto overscroll-contain pl-4 space-y-2 md:space-y-4 mt-4 md:mt-0 [-webkit-overflow-scrolling:touch]">
           {userRole === "admin" && (
             <button
               onClick={() => handleNavigation("dashboard")}
@@ -608,7 +608,7 @@ export default function App() {
       </aside>
 
       {/* Konten Utama - Tambahkan dark:bg-slate-900 */}
-      <main className="flex-1 min-h-0 z-999 p-4 pb-24 md:p-6 overflow-y-auto overscroll-contain bg-gray-50 dark:bg-dashboardDark flex flex-col relative z-10 transition-colors duration-300">
+      <main className="flex-1 min-h-0 z-999 p-4 pb-24 md:p-6 overflow-y-auto overscroll-contain bg-gray-50 dark:bg-dashboardDark flex flex-col relative z-10 transition-colors duration-300 font-default">
         <Suspense fallback={tabFallback}>
           <>
             {activeTab === "kasir" && (

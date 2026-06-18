@@ -1,4 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
+import { LineChart } from "@mui/x-charts/LineChart";
+import { PieChart } from "@mui/x-charts/PieChart";
 import {
   Package,
   ShoppingCart,
@@ -10,10 +12,6 @@ import {
   Calendar,
 } from "lucide-react";
 import * as api from "../services/api";
-import {
-  SimpleBarChart,
-  SimpleDonutChart,
-} from "../components/LightweightCharts";
 
 let hasPlayedDashboardCountAnimation = false;
 
@@ -71,7 +69,7 @@ const AnimatedNumber = ({
 };
 
 const DashboardCard = ({ title, value, icon, colorClass, subtitle }) => (
-  <div className="bg-white dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-darkMode flex items-center space-x-4 transition-all hover:shadow-md">
+  <div className="bg-white font-default dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-darkMode flex items-center space-x-4 transition-all hover:shadow-md">
     <div className={`p-4 rounded-xl ${colorClass} shadow-sm`}>{icon}</div>
     <div>
       <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-100 font-bold">
@@ -421,17 +419,63 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
                 Menyiapkan grafik...
               </div>
             ) : barChartData.length > 0 ? (
-              <SimpleBarChart
-                data={barChartData}
-                series={[
+              <LineChart
+                height={300}
+                xAxis={[
                   {
-                    dataKey: "omzet",
-                    label: "Omzet",
-                    color: "#2563eb",
-                    valueFormatter: (value) => formatRupiah(value),
+                    scaleType: "band",
+                    data: barChartData.map((d) => d.label),
+                    tickLabelStyle: {
+                      fontSize: 10,
+                      fill: "currentColor",
+                    },
                   },
                 ]}
-                emptyMessage="Belum ada transaksi di periode ini."
+                yAxis={[
+                  {
+                    tickLabelStyle: {
+                      fontSize: 10,
+                      fill: "currentColor",
+                    },
+                    valueFormatter: (v) => {
+                      if (v >= 1000000) return `${(v / 1000000).toFixed(1)} Jt`;
+                      if (v >= 1000) return `${(v / 1000).toFixed(0)} Rb`;
+                      return String(v);
+                    },
+                  },
+                ]}
+                grid={{ vertical: false, horizontal: true }}
+                series={[
+                  {
+                    data: barChartData.map((d) => d.omzet),
+                    label: "Omzet",
+                    color: "#2563eb",
+                    showMark: false,
+                    valueFormatter: (v) => formatRupiah(v),
+                  },
+                ]}
+                sx={{
+                  "& .MuiChartsAxis-tickLabel": {
+                    fill: "#6b7280",
+                  },
+                  "& .MuiChartsAxis-line": {
+                    stroke: "#d1d5db",
+                  },
+                  "& .MuiChartsGrid-line": {
+                    stroke: "#e5e7eb",
+                  },
+                  ".dark &": {
+                    "& .MuiChartsAxis-tickLabel": {
+                      fill: "#d1d5db",
+                    },
+                    "& .MuiChartsAxis-line": {
+                      stroke: "#4b5563",
+                    },
+                    "& .MuiChartsGrid-line": {
+                      stroke: "#374151",
+                    },
+                  },
+                }}
               />
             ) : (
               <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
@@ -457,7 +501,44 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
                 Menyiapkan grafik...
               </div>
             ) : pieChartData.length > 0 ? (
-              <SimpleDonutChart data={pieChartData} />
+              <div className="flex flex-col items-center gap-3">
+                <PieChart
+                  series={[
+                    {
+                      data: pieChartData,
+                      highlightScope: { fade: "global", highlight: "item" },
+                      faded: {
+                        innerRadius: 30,
+                        additionalRadius: -30,
+                        color: "gray",
+                      },
+                      innerRadius: 30,
+                      outerRadius: 80,
+                      paddingAngle: 2,
+                      cornerRadius: 4,
+                      valueFormatter: (item) => `${item.value} Jenis`,
+                    },
+                  ]}
+                  height={220}
+                  width={220}
+                  sx={{
+                    "& .MuiPieArcLabel-root": {
+                      fontSize: 10,
+                      fontWeight: 700,
+                    },
+                  }}
+                />
+                <div className="flex flex-wrap justify-center gap-1.5 max-w-[200px]">
+                  {pieChartData.slice(0, 6).map((item, i) => (
+                    <div
+                      key={item.id}
+                      className="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] font-bold text-gray-600 dark:bg-slate-800 dark:text-gray-300"
+                    >
+                      {item.label}: {item.value}
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="text-gray-400 text-sm font-medium">
                 Belum ada produk.

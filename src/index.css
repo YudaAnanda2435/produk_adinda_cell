@@ -1,84 +1,86 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "tailwindcss";
 
 /* Baris sakti Tailwind v4 untuk manual dark mode class */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-helvetica: "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
-  --color-darkMode: #44444E;
-  --color-fontDark: #EEEEEE;
-  --color-cardDark: #35374B;
+  --font-helvetica:
+    "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --color-darkMode: #44444e;
+  --color-fontDark: #eeeeee;
+  --color-cardDark: #35374b;
   --color-dashboardDark: #222831;
-  --color-borderDark: #7F8487;
+  --color-borderDark: #7f8487;
+  --font-default: "Inter";
 }
 
-@layer components{
-  html{
+@layer components {
+  html {
     @apply font-helvetica;
   }
   .nav-active-curve {
     position: relative;
     /* Warna background utama (Light Mode = gray-50) */
-    background-color: #f9fafb; 
-    color: #2563eb; 
+    background-color: #f9fafb;
+    color: #2563eb;
     /* Buat melengkung hanya di kiri */
-    border-radius: 9px 0 0 9999px; 
+    border-radius: 9px 0 0 9999px;
   }
 
   @media (min-width: 768px) {
-  /* Membuat kotak tak terlihat di atas dan bawah */
-  .nav-active-curve::before,
-  .nav-active-curve::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    width: 30px;
-    border: none;
-    outline: none;
-    height: 30px;
-    background-color: transparent;
-    pointer-events: none;
+    /* Membuat kotak tak terlihat di atas dan bawah */
+    .nav-active-curve::before,
+    .nav-active-curve::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      width: 30px;
+      border: none;
+      outline: none;
+      height: 30px;
+      background-color: transparent;
+      pointer-events: none;
+    }
+
+    /* Menggambar kurva di ATAS tombol aktif */
+    .nav-active-curve::before {
+      top: -30px;
+      border-bottom-right-radius: 30px;
+      border: none;
+      outline: none;
+      box-shadow: 15px 15px 0 15px #f9fafb; /* Warna abu-abu terang */
+    }
+
+    /* Menggambar kurva di BAWAH tombol aktif */
+    .nav-active-curve::after {
+      bottom: -30px;
+      border-top-right-radius: 30px;
+      box-shadow: 15px -15px 0 15px #f9fafb;
+    }
   }
-
-  /* Menggambar kurva di ATAS tombol aktif */
-  .nav-active-curve::before {
-    top: -30px;
-    border-bottom-right-radius: 30px;
-    border: none;
-    outline: none;
-    box-shadow: 15px 15px 0 15px #f9fafb; /* Warna abu-abu terang */
-  }
-
-  /* Menggambar kurva di BAWAH tombol aktif */
-  .nav-active-curve::after {
-    bottom: -30px;
-    border-top-right-radius: 30px;
-    box-shadow: 15px -15px 0 15px #f9fafb;
-  } 
-
-}
 
   /* --- ADAPTASI OTOMATIS UNTUK DARK MODE --- */
   .dark .nav-active-curve {
     background-color: #000000; /* Warna background utama (Dark = slate-900) */
-    color: #000000; 
+    color: #000000;
     border: none;
   }
   .dark .nav-active-curve::before {
     box-shadow: 15px 15px 0 15px #222831;
-       border: none;
+    border: none;
   }
   .dark .nav-active-curve::after {
     box-shadow: 15px -15px 0 15px #222831;
-       border: none;
+    border: none;
   }
 }
 
-.no-scrollbar::-webkit-scrollbar{
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-.no-scrollbar{
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }

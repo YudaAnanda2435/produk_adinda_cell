@@ -33,9 +33,9 @@ const getProductSearchText = (product) =>
 
 // Komponen Skeleton khusus untuk halaman Kasir
 const KasirSkeleton = () => (
-  <div className="flex flex-col lg:flex-row gap-6 h-full min-h-0 flex-1 w-full animate-pulse">
+  <div className="flex flex-col font-default lg:flex-row gap-6 h-full min-h-0 flex-1 w-full animate-pulse">
     {/* SKELETON KIRI: Form Kasir */}
-    <div className="w-full lg:w-[420px] shrink-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-fit space-y-6">
+    <div className="w-full lg:w-[420px] font-default shrink-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-fit space-y-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 bg-slate-200 rounded-full"></div>
         <div className="h-6 w-32 bg-slate-200 rounded-lg"></div>

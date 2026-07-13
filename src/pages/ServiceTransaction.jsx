@@ -19,6 +19,7 @@ const initialForm = {
   no_hp: "",
   perangkat: "",
   keluhan: "",
+  garansi: "",
   modal_sparepart: 0,
   jasa_pengerjaan: 0,
   metode_pembayaran: "Tunai",
@@ -86,7 +87,9 @@ export default function ServiceTransaction({
           jumlah: 1,
           harga_satuan: totalBayar,
           total_harga: totalBayar,
-          keterangan: formData.perangkat,
+          keterangan: formData.garansi
+            ? `${formData.perangkat} - Garansi ${formData.garansi}`
+            : formData.perangkat,
         },
       ];
 
@@ -200,17 +203,31 @@ export default function ServiceTransaction({
                 <option value="Transfer">Transfer</option>
               </select>
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
-                Keluhan / Pekerjaan
-              </label>
-              <input
-                name="keluhan"
-                value={formData.keluhan}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] font-medium text-gray-800 outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Contoh: Ganti LCD, baterai drop, konektor charger"
-              />
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] gap-4">
+              <div>
+                <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+                  Keluhan / Pekerjaan
+                </label>
+                <input
+                  name="keluhan"
+                  value={formData.keluhan}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] font-medium text-gray-800 outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: Ganti LCD, baterai drop, konektor charger"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+                  Garansi
+                </label>
+                <input
+                  name="garansi"
+                  value={formData.garansi}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] font-medium text-gray-800 outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: 7 hari"
+                />
+              </div>
             </div>
           </div>
 

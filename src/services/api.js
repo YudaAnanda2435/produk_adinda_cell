@@ -81,6 +81,7 @@ const buildChartSlots = (startDate, endDate) => {
         date: key,
         label: `${month} ${current.getFullYear()}`,
         omzet: 0,
+        laba: 0,
       };
       current.setMonth(current.getMonth() + 1);
     }
@@ -93,7 +94,7 @@ const buildChartSlots = (startDate, endDate) => {
     const key = createDateKey(current);
     const day = String(current.getDate()).padStart(2, "0");
     const month = String(current.getMonth() + 1).padStart(2, "0");
-    grouped[key] = { date: key, label: `${day}/${month}`, omzet: 0 };
+    grouped[key] = { date: key, label: `${day}/${month}`, omzet: 0, laba: 0 };
     current.setDate(current.getDate() + 1);
   }
 
@@ -135,6 +136,7 @@ const calculateDashboardSummary = (transactions, startDate, endDate) => {
 
       if (chartSlots[chartKey]) {
         chartSlots[chartKey].omzet += Number(transaction.total_harga) || 0;
+        chartSlots[chartKey].laba += Number(transaction.laba) || 0;
       }
 
       return result;
@@ -158,12 +160,50 @@ const normalizeDashboardSummary = (payload) => {
   const source = payload.data || payload;
   const stats = source.stats || source;
 
+  const rawChartData =
+    source.barChartData || source.chartData || source.grafikOmzet || [];
+  const hasChartLaba = chartHasLaba(rawChartData);
+
   return {
     unitTerjual: Number(stats.unitTerjual ?? stats.unit_terjual) || 0,
     labaBersih: Number(stats.labaBersih ?? stats.laba_bersih) || 0,
     omzetTotal: Number(stats.omzetTotal ?? stats.omzet_total) || 0,
-    barChartData:
-      source.barChartData || source.chartData || source.grafikOmzet || [],
+    chartHasLaba: hasChartLaba,
+    barChartData: rawChartData.map((item) => ({
+      ...item,
+      omzet: Number(item.omzet ?? item.omzetTotal ?? item.omzet_total) || 0,
+      laba:
+        Number(item.laba ?? item.labaBersih ?? item.laba_bersih) || 0,
+    })),
+  };
+};
+
+const chartHasLaba = (chartData = []) =>
+  chartData.some((item) =>
+    ["laba", "labaBersih", "laba_bersih"].some(
+      (key) => item[key] !== undefined && item[key] !== null,
+    ),
+  );
+
+const enrichSummaryChartWithLaba = async (summary, startDate, endDate, refreshKey) => {
+  if (!summary || summary.chartHasLaba) return summary;
+
+  const transactions = await getTransactions({ startDate, endDate, refreshKey });
+  const summaryWithLaba = calculateDashboardSummary(
+    transactions,
+    startDate,
+    endDate,
+  );
+  const labaByDate = new Map(
+    summaryWithLaba.barChartData.map((item) => [item.date, item.laba]),
+  );
+
+  return {
+    ...summary,
+    barChartData: summary.barChartData.map((item) => ({
+      ...item,
+      laba: Number(labaByDate.get(item.date)) || 0,
+    })),
   };
 };
 
@@ -265,8 +305,14 @@ export const getDashboardSummary = async ({
     );
     const summary = normalizeDashboardSummary(await response.json());
     if (summary) {
-      writeCache(dashboardCacheKey({ startDate, endDate }), summary);
-      return summary;
+      const enrichedSummary = await enrichSummaryChartWithLaba(
+        summary,
+        startDate,
+        endDate,
+        refreshKey,
+      );
+      writeCache(dashboardCacheKey({ startDate, endDate }), enrichedSummary);
+      return enrichedSummary;
     }
   } catch (error) {
     console.warn("Endpoint ringkasan dashboard belum tersedia.", error);

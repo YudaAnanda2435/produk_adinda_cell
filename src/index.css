@@ -19,61 +19,6 @@
   html {
     @apply font-helvetica;
   }
-  .nav-active-curve {
-    position: relative;
-    /* Warna background utama (Light Mode = gray-50) */
-    background-color: #f9fafb;
-    color: #2563eb;
-    /* Buat melengkung hanya di kiri */
-    border-radius: 9px 0 0 9999px;
-  }
-
-  @media (min-width: 768px) {
-    /* Membuat kotak tak terlihat di atas dan bawah */
-    .nav-active-curve::before,
-    .nav-active-curve::after {
-      content: "";
-      position: absolute;
-      right: 0;
-      width: 30px;
-      border: none;
-      outline: none;
-      height: 30px;
-      background-color: transparent;
-      pointer-events: none;
-    }
-
-    /* Menggambar kurva di ATAS tombol aktif */
-    .nav-active-curve::before {
-      top: -30px;
-      border-bottom-right-radius: 30px;
-      border: none;
-      outline: none;
-      box-shadow: 15px 15px 0 15px #f9fafb; /* Warna abu-abu terang */
-    }
-
-    /* Menggambar kurva di BAWAH tombol aktif */
-    .nav-active-curve::after {
-      bottom: -30px;
-      border-top-right-radius: 30px;
-      box-shadow: 15px -15px 0 15px #f9fafb;
-    }
-  }
-
-  /* --- ADAPTASI OTOMATIS UNTUK DARK MODE --- */
-  .dark .nav-active-curve {
-    background-color: #000000; /* Warna background utama (Dark = slate-900) */
-    color: #000000;
-    border: none;
-  }
-  .dark .nav-active-curve::before {
-    box-shadow: 15px 15px 0 15px #222831;
-    border: none;
-  }
-  .dark .nav-active-curve::after {
-    box-shadow: 15px -15px 0 15px #222831;
-    border: none;
-  }
 }
 
 .no-scrollbar::-webkit-scrollbar {

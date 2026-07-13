@@ -402,7 +402,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
             // data-aos-delay="400"
             // data-aos-duration="800"
           >
-            Grafik Omzet ({periodeLabel})
+            Grafik Omzet & Laba Bersih ({periodeLabel})
           </h3>
           <div
             className="flex-1 w-full bg-white dark:bg-cardDark rounded-xl overflow-hidden p-2"
@@ -450,6 +450,13 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
                     data: barChartData.map((d) => d.omzet),
                     label: "Omzet",
                     color: "#2563eb",
+                    showMark: false,
+                    valueFormatter: (v) => formatRupiah(v),
+                  },
+                  {
+                    data: barChartData.map((d) => d.laba),
+                    label: "Laba Bersih",
+                    color: "#16a34a",
                     showMark: false,
                     valueFormatter: (v) => formatRupiah(v),
                   },
@@ -529,7 +536,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
                   }}
                 />
                 <div className="flex flex-wrap justify-center gap-1.5 max-w-[200px]">
-                  {pieChartData.slice(0, 6).map((item, i) => (
+                  {pieChartData.slice(0, 6).map((item) => (
                     <div
                       key={item.id}
                       className="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] font-bold text-gray-600 dark:bg-slate-800 dark:text-gray-300"

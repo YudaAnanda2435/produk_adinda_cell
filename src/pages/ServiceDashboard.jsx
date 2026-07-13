@@ -7,7 +7,7 @@ import {
   Wallet,
   Wrench,
 } from "lucide-react";
-import { SimpleBarChart } from "../components/LightweightCharts";
+import { LineChart } from "@mui/x-charts/LineChart";
 import {
   filterServiceByDate,
   formatDateLabel,
@@ -238,23 +238,72 @@ export default function ServiceDashboard({
                 Menyiapkan grafik...
               </div>
             ) : chartData.length > 0 ? (
-              <SimpleBarChart
-                data={chartData}
-                series={[
+              <LineChart
+                height={300}
+                xAxis={[
                   {
-                    dataKey: "totalBayar",
-                    label: "Total Bayar",
-                    color: "#2563eb",
-                    valueFormatter: formatRupiah,
-                  },
-                  {
-                    dataKey: "laba",
-                    label: "Laba",
-                    color: "#16a34a",
-                    valueFormatter: formatRupiah,
+                    scaleType: "band",
+                    data: chartData.map((item) => item.label),
+                    tickLabelStyle: {
+                      fontSize: 10,
+                      fill: "currentColor",
+                    },
                   },
                 ]}
-                emptyMessage="Belum ada transaksi service pada periode ini."
+                yAxis={[
+                  {
+                    tickLabelStyle: {
+                      fontSize: 10,
+                      fill: "currentColor",
+                    },
+                    valueFormatter: (value) => {
+                      if (value >= 1000000) {
+                        return `${(value / 1000000).toFixed(1)} Jt`;
+                      }
+                      if (value >= 1000) return `${(value / 1000).toFixed(0)} Rb`;
+                      return String(value);
+                    },
+                  },
+                ]}
+                grid={{ vertical: false, horizontal: true }}
+                series={[
+                  {
+                    data: chartData.map((item) => item.totalBayar),
+                    label: "Total Bayar",
+                    color: "#2563eb",
+                    showMark: false,
+                    valueFormatter: (value) => formatRupiah(value),
+                  },
+                  {
+                    data: chartData.map((item) => item.laba),
+                    label: "Laba",
+                    color: "#16a34a",
+                    showMark: false,
+                    valueFormatter: (value) => formatRupiah(value),
+                  },
+                ]}
+                sx={{
+                  "& .MuiChartsAxis-tickLabel": {
+                    fill: "#6b7280",
+                  },
+                  "& .MuiChartsAxis-line": {
+                    stroke: "#d1d5db",
+                  },
+                  "& .MuiChartsGrid-line": {
+                    stroke: "#e5e7eb",
+                  },
+                  ".dark &": {
+                    "& .MuiChartsAxis-tickLabel": {
+                      fill: "#d1d5db",
+                    },
+                    "& .MuiChartsAxis-line": {
+                      stroke: "#4b5563",
+                    },
+                    "& .MuiChartsGrid-line": {
+                      stroke: "#374151",
+                    },
+                  },
+                }}
               />
             ) : (
               <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">

@@ -102,6 +102,9 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
               <option value="LCD">LCD / Touchscreen</option>
               <option value="Baterai">Baterai</option>
               <option value="Konektor Charger">Konektor Charger</option>
+              <option value="Flex vol">Flex vol</option>
+              <option value="Flex on/off + vol">Flex on/off + vol</option>
+              <option value="Flex on/off">Flex on/off</option>
               <option value="Fleksibel On/Off">Fleksibel On/Off</option>
               <option value="Kamera">Kamera</option>
               <option value="Speaker">Speaker</option>

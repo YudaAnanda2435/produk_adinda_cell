@@ -1,32 +1,50 @@
 import { Suspense, lazy, useCallback, useRef, useState, useEffect } from "react";
-import {
-  Package,
-  LayoutDashboard,
-  ShoppingCart,
-  Database,
-  Receipt,
-  LogOut,
-  Menu,
-  X,
-  ChevronDown,
-  BarChart3,
-  ClipboardList,
-  Wrench,
-  Moon, // Import icon Moon
-  Sun, // Import icon Sun
-} from "lucide-react";
 import { DashboardSkeleton, TableSkeleton } from "./components/Skeleton";
 import ConfirmModal from "./components/ConfirmModal";
+import Sidebar from "./components/Sidebar";
 import * as api from "./services/api";
 
-const Login = lazy(() => import("./pages/Login"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Products = lazy(() => import("./pages/Products"));
-const Kasir = lazy(() => import("./pages/Kasir"));
-const Riwayat = lazy(() => import("./pages/Riwayat"));
-const ServiceDashboard = lazy(() => import("./pages/ServiceDashboard"));
-const ServiceTransaction = lazy(() => import("./pages/ServiceTransaction"));
-const ServiceHistory = lazy(() => import("./pages/ServiceHistory"));
+const loadLogin = () => import("./pages/Login");
+const loadDashboard = () => import("./pages/Dashboard");
+const loadProducts = () => import("./pages/Products");
+const loadKasir = () => import("./pages/Kasir");
+const loadRiwayat = () => import("./pages/Riwayat");
+const loadServiceDashboard = () => import("./pages/ServiceDashboard");
+const loadServiceTransaction = () => import("./pages/ServiceTransaction");
+const loadServiceHistory = () => import("./pages/ServiceHistory");
+
+const Login = lazy(loadLogin);
+const Dashboard = lazy(loadDashboard);
+const Products = lazy(loadProducts);
+const Kasir = lazy(loadKasir);
+const Riwayat = lazy(loadRiwayat);
+const ServiceDashboard = lazy(loadServiceDashboard);
+const ServiceTransaction = lazy(loadServiceTransaction);
+const ServiceHistory = lazy(loadServiceHistory);
+
+const pageLoaders = {
+  dashboard: loadDashboard,
+  products: loadProducts,
+  kasir: loadKasir,
+  riwayat: loadRiwayat,
+  "service-dashboard": loadServiceDashboard,
+  "service-transaction": loadServiceTransaction,
+  "service-history": loadServiceHistory,
+};
+
+const preloadPage = (tab) => {
+  pageLoaders[tab]?.();
+};
+
+const runWhenIdle = (callback) => {
+  if ("requestIdleCallback" in window) {
+    const idleId = window.requestIdleCallback(callback, { timeout: 1500 });
+    return () => window.cancelIdleCallback(idleId);
+  }
+
+  const timeoutId = window.setTimeout(callback, 500);
+  return () => window.clearTimeout(timeoutId);
+};
 
 const isSameTransaction = (a, b) =>
   String(a.nama_produk || "") === String(b.nama_produk || "") &&
@@ -50,6 +68,9 @@ const resetDocumentScroll = () => {
   document.body.scrollTop = 0;
 };
 
+const getInitialTab = () =>
+  localStorage.getItem("userRole") === "admin" ? "dashboard" : "kasir";
+
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem("isLoggedIn") === "true",
@@ -61,14 +82,14 @@ export default function App() {
     () => localStorage.getItem("userName") || "",
   );
 
-  const [activeTab, setActiveTab] = useState(() =>
-    localStorage.getItem("userRole") === "admin" ? "dashboard" : "kasir",
-  );
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+  const [renderedTab, setRenderedTab] = useState(getInitialTab);
 
   const [products, setProducts] = useState(() => api.getCachedProducts());
   const [transactions, setTransactions] = useState([]);
   const [, setLocalTransactions] = useState([]);
   const localTransactionsRef = useRef([]);
+  const navigationFrameRef = useRef(null);
   const [transactionsRefreshKey, setTransactionsRefreshKey] = useState(0);
   const [serviceTransactions, setServiceTransactions] = useState([]);
   const [serviceRefreshKey, setServiceRefreshKey] = useState(0);
@@ -240,6 +261,23 @@ export default function App() {
   }, [fetchProducts, isLoggedIn, userRole]);
 
   useEffect(() => {
+    if (!isLoggedIn) return undefined;
+
+    return runWhenIdle(() => {
+      loadKasir();
+      loadServiceTransaction();
+
+      if (userRole === "admin") {
+        loadDashboard();
+        loadProducts();
+        loadRiwayat();
+        loadServiceDashboard();
+        loadServiceHistory();
+      }
+    });
+  }, [isLoggedIn, userRole]);
+
+  useEffect(() => {
     if (!isLoggedIn) return;
 
     resetDocumentScroll();
@@ -250,7 +288,15 @@ export default function App() {
       window.cancelAnimationFrame(frameId);
       window.clearTimeout(timeoutId);
     };
-  }, [isLoggedIn, activeTab]);
+  }, [isLoggedIn, renderedTab]);
+
+  useEffect(() => {
+    return () => {
+      if (navigationFrameRef.current) {
+        window.cancelAnimationFrame(navigationFrameRef.current);
+      }
+    };
+  }, []);
 
   // useEffect(() => {
   //   if (!isLoggedIn) return;
@@ -271,22 +317,24 @@ export default function App() {
   // }, [isLoggedIn]);
 
   const tabFallback =
-    activeTab === "dashboard" ? <DashboardSkeleton /> : <TableSkeleton />;
+    renderedTab === "dashboard" ? <DashboardSkeleton /> : <TableSkeleton />;
 
-  const handleLogin = (role, name) => {
+  const handleLogin = useCallback((role, name) => {
     setUserRole(role);
     setUserName(name);
     setIsLoggedIn(true);
 
     const initialTab = role === "admin" ? "dashboard" : "kasir";
     setActiveTab(initialTab);
+    setRenderedTab(initialTab);
 
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("userRole", role);
     localStorage.setItem("userName", name);
-  };
+    preloadPage(initialTab);
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setIsLoggedIn(false);
     setUserRole("");
     setUserName("");
@@ -297,14 +345,43 @@ export default function App() {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userName");
-  };
+  }, [handleClearServiceTransactions, handleClearTransactions]);
 
-  const handleNavigation = (tab) => {
+  const handleNavigation = useCallback((tab) => {
+    preloadPage(tab);
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
-  };
 
-  const serviceMenuIsActive = activeTab.startsWith("service-");
+    if (navigationFrameRef.current) {
+      window.cancelAnimationFrame(navigationFrameRef.current);
+    }
+
+    navigationFrameRef.current = window.requestAnimationFrame(() => {
+      setRenderedTab(tab);
+      navigationFrameRef.current = null;
+    });
+  }, []);
+
+  const handleToggleDarkMode = useCallback(() => {
+    setIsDarkMode((currentMode) => !currentMode);
+  }, []);
+
+  const handleToggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen((isOpen) => !isOpen);
+  }, []);
+
+  const handleCloseMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  const handleToggleServiceMenu = useCallback(() => {
+    setIsServiceMenuOpen((isOpen) => !isOpen);
+  }, []);
+
+  const handleOpenLogoutModal = useCallback(() => {
+    setIsLogoutModalOpen(true);
+  }, []);
+
 
   if (!isLoggedIn) {
     return (
@@ -324,294 +401,26 @@ export default function App() {
   return (
     // TAMBAHAN: dark:bg-slate-950 dark:text-gray-100 pada container utama
     <div className="h-screen [height:100dvh] overflow-hidden bg-gray-50 dark:bg-slate-950 flex flex-col md:flex-row font-helvetica text-gray-800 dark:text-gray-100 transition-colors duration-300">
-      {/* Header Mobile */}
-      <div className="md:hidden font-default flex items-center justify-between bg-slate-900 dark:bg-black text-white p-4 pr-20 shadow-md z-20 shrink-0 transition-colors duration-300">
-        <div className="flex items-center gap-2">
-          <Package className="text-blue-400" size={24} />
-          <h1 className="text-lg font-bold tracking-wider">Adinda Cell</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          {/* Tombol Toggle Tema Mobile */}
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-1 text-slate-300 hover:text-yellow-400 transition-colors"
-          >
-            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
-          </button>
-        </div>
-      </div>
-
-      <button
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="fixed right-4 top-4 z-[10000000] p-1 text-slate-300 hover:text-white transition-colors md:hidden"
-        aria-label={isMobileMenuOpen ? "Tutup menu" : "Buka menu"}
-      >
-        {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-      </button>
-
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-[9999998] md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar Navigasi */}
-      <aside
-        className={`
-        fixed inset-y-0 left-0 z-[9999999] md:z-10 w-64 bg-slate-900 dark:bg-black text-white shadow-2xl flex flex-col 
-        transform transition-transform duration-300 ease-in-out
-        md:relative md:translate-x-0 md:shadow-xl  border-transparent dark:border-slate-800
-        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
-      `}
-      >
-        <div className="p-6 hidden md:flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold font-normal tracking-wider font-default flex items-center">
-              <Package className="mr-3 text-blue-400" /> Adinda Cell
-            </h2>
-            <p className="text-slate-400 text-[10px] uppercase tracking-widest mt-1 font-semibold">
-              Halo, {userName} ({userRole})
-            </p>
-          </div>
-          {/* Tombol Toggle Tema Desktop */}
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-yellow-400 transition-colors"
-            title={isDarkMode ? "Ganti Tema Terang" : "Ganti Tema Gelap"}
-          >
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-        </div>
-
-        {/* Profil pengguna mobile */}
-        <div className="p-6 md:hidden border-b border-slate-800 mb-2">
-          <p className="text-slate-400 text-[10px] uppercase tracking-widest font-bold">
-            Masuk Sebagai:
-          </p>
-          <p className="text-lg font-bold text-white mt-1">{userName}</p>
-          <p className="text-sm text-blue-400 capitalize">{userRole}</p>
-        </div>
-
-        <nav className="min-h-0 flex-1 font-default overflow-y-auto overscroll-contain pl-4 space-y-2 md:space-y-4 mt-4 md:mt-0 [-webkit-overflow-scrolling:touch]">
-          {userRole === "admin" && (
-            <button
-              onClick={() => handleNavigation("dashboard")}
-              className={`group relative w-full flex items-center cursor-pointer px-4 py-3 transition-colors duration-300 ${
-                activeTab === "dashboard"
-                  ? "text-darkMode dark:text-fontDark"
-                  : "text-slate-400"
-              }`}
-            >
-              {/* --- EFEK HOVER --- */}
-              {activeTab !== "dashboard" && (
-                <div className="absolute inset-y-1 left-2 right-6 rounded-full opacity-0 group-hover:opacity-100 bg-slate-800/20 dark:bg-slate-700/40 transition-opacity duration-300" />
-              )}
-
-              {/* --- EFEK AKTIF --- */}
-              {activeTab === "dashboard" && (
-                <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
-              )}
-
-              {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
-              <span
-                className={`relative z-10 flex items-center transition-all duration-300 ${
-                  activeTab === "dashboard" ? "text-[18px]" : "text-[14px]"
-                }`}
-              >
-                <LayoutDashboard size={20} className="mr-3" /> Dashboard
-              </span>
-            </button>
-          )}
-
-          <button
-            onClick={() => handleNavigation("kasir")}
-            className={`group relative w-full flex items-center cursor-pointer px-4 py-3 transition-colors duration-300 ${
-              activeTab === "kasir"
-                ? "text-darkMode dark:text-fontDark"
-                : "text-slate-400"
-            }`}
-          >
-            {activeTab !== "kasir" && (
-              <div className="absolute inset-y-1 left-2 right-6 rounded-full opacity-0 group-hover:opacity-100 bg-slate-800/20 dark:bg-slate-700/40 transition-opacity duration-300" />
-            )}
-
-            {activeTab === "kasir" && (
-              <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
-            )}
-
-            {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
-            <span
-              className={`relative z-10 flex items-center transition-all duration-300 ${
-                activeTab === "kasir" ? "text-[18px]" : "text-[14px]"
-              }`}
-            >
-              <ShoppingCart size={20} className="mr-3" /> Kasir Penjualan
-            </span>
-          </button>
-
-          {userRole === "admin" && (
-            <>
-              <button
-                onClick={() => handleNavigation("riwayat")}
-                className={`group relative w-full flex items-center cursor-pointer px-4 py-3 transition-colors duration-300 ${
-                  activeTab === "riwayat"
-                    ? "text-darkMode dark:text-fontDark"
-                    : "text-slate-400"
-                }`}
-              >
-                {activeTab !== "riwayat" && (
-                  <div className="absolute inset-y-1 left-2 right-6 rounded-full opacity-0 group-hover:opacity-100 bg-slate-800/20 dark:bg-slate-700/40 transition-opacity duration-300" />
-                )}
-
-                {activeTab === "riwayat" && (
-                  <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
-                )}
-
-                {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
-                <span
-                  className={`relative z-10 flex items-center transition-all duration-300 ${
-                    activeTab === "riwayat" ? "text-[18px]" : "text-[14px]"
-                  }`}
-                >
-                  <Receipt size={20} className="mr-3" /> Riwayat Transaksi
-                </span>
-              </button>
-
-              <button
-                onClick={() => handleNavigation("products")}
-                className={`group relative w-full flex items-center cursor-pointer px-4 py-3 transition-colors duration-300 ${
-                  activeTab === "products"
-                    ? "text-darkMode dark:text-fontDark"
-                    : "text-slate-400"
-                }`}
-              >
-                {activeTab !== "products" && (
-                  <div className="absolute inset-y-1 left-2 right-6 rounded-full bg-slate-800/20 dark:bg-black  dark:group-hover:bg-dashboardDark transition-colors duration-300" />
-                )}
-
-                {activeTab === "products" && (
-                  <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
-                )}
-
-                {/* PERUBAHAN: Font Size Dinamis dengan Transisi */}
-                <span
-                  className={`relative z-10 flex items-center transition-all duration-300 ${
-                    activeTab === "products" ? "text-[18px]" : "text-[14px]"
-                  }`}
-                >
-                  <Database size={20} className="mr-3" /> Data Stok Produk
-                </span>
-              </button>
-              <div>
-                <button
-                  onClick={() => setIsServiceMenuOpen((isOpen) => !isOpen)}
-                  className={`group relative w-full flex items-center justify-between cursor-pointer px-4 py-3 transition-colors duration-300 ${
-                    serviceMenuIsActive
-                      ? "text-darkMode dark:text-fontDark"
-                      : "text-slate-400"
-                  }`}
-                >
-                  {!serviceMenuIsActive && (
-                    <div className="absolute inset-y-1 left-2 right-6 rounded-full opacity-0 group-hover:opacity-100 bg-slate-800/20 dark:bg-slate-700/40 transition-opacity duration-300" />
-                  )}
-
-                  {serviceMenuIsActive && (
-                    <div className="absolute inset-0 bg-slate-50 dark:bg-dashboardDark rounded-l-full nav-active-curve transition-all duration-200" />
-                  )}
-
-                  <span
-                    className={`relative z-10 flex items-center transition-all duration-300 ${
-                      serviceMenuIsActive ? "text-[18px]" : "text-[14px]"
-                    }`}
-                  >
-                    <Wrench size={20} className="mr-3" /> Service
-                  </span>
-                  <ChevronDown
-                    size={18}
-                    className={`relative z-10 mr-5 transition-transform duration-300 ${
-                      isServiceMenuOpen || serviceMenuIsActive
-                        ? "rotate-180"
-                        : ""
-                    }`}
-                  />
-                </button>
-
-                {(isServiceMenuOpen || serviceMenuIsActive) && (
-                  <div className="mr-4 ml-8 mt-4 space-y-1">
-                    {userRole === "admin" && (
-                      <button
-                        onClick={() => handleNavigation("service-dashboard")}
-                        className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors ${
-                          activeTab === "service-dashboard"
-                            ? "bg-blue-500/15 text-blue-300"
-                            : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
-                        }`}
-                      >
-                        <BarChart3 size={16} /> Dashboard
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleNavigation("service-transaction")}
-                      className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors ${
-                        activeTab === "service-transaction"
-                          ? "bg-blue-500/15 text-blue-300"
-                          : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
-                      }`}
-                    >
-                      <Wrench size={16} /> Transaksi
-                    </button>
-                    {userRole === "admin" && (
-                      <button
-                        onClick={() => handleNavigation("service-history")}
-                        className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors ${
-                          activeTab === "service-history"
-                            ? "bg-blue-500/15 text-blue-300"
-                            : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
-                        }`}
-                      >
-                        <ClipboardList size={16} /> Riwayat
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </nav>
-
-        <div className="p-4 mt-auto">
-          <button
-            onClick={() => setIsLogoutModalOpen(true)}
-            className="w-full flex items-center justify-center px-4 py-3 bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white rounded-xl transition-all mb-4"
-          >
-            <LogOut size={18} className="mr-2" /> Keluar
-          </button>
-          <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
-            <div className="flex items-center gap-3">
-              <div
-                className={`h-2 w-2 rounded-full ${api.API_URL ? "bg-green-400 animate-pulse" : "bg-red-400"}`}
-              ></div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-300 uppercase">
-                  Status Server
-                </span>
-                <span className="text-[9px] text-slate-500 truncate w-32">
-                  {api.API_URL
-                    ? "Terhubung ke Google Cloud"
-                    : "Koneksi Terputus"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar
+        activeTab={activeTab}
+        userRole={userRole}
+        userName={userName}
+        isDarkMode={isDarkMode}
+        isMobileMenuOpen={isMobileMenuOpen}
+        isServiceMenuOpen={isServiceMenuOpen}
+        onToggleDarkMode={handleToggleDarkMode}
+        onToggleMobileMenu={handleToggleMobileMenu}
+        onCloseMobileMenu={handleCloseMobileMenu}
+        onToggleServiceMenu={handleToggleServiceMenu}
+        onNavigate={handleNavigation}
+        onLogoutClick={handleOpenLogoutModal}
+      />
 
       {/* Konten Utama - Tambahkan dark:bg-slate-900 */}
       <main className="flex-1 min-h-0 z-999 p-4 pb-24 md:p-6 overflow-y-auto overscroll-contain bg-gray-50 dark:bg-dashboardDark flex flex-col relative z-10 transition-colors duration-300 font-default">
         <Suspense fallback={tabFallback}>
           <>
-            {activeTab === "kasir" && (
+            {renderedTab === "kasir" && (
               <Kasir
                 products={products}
                 fetchProducts={fetchProducts}
@@ -619,7 +428,7 @@ export default function App() {
                 isLoading={isProductsLoading}
               />
             )}
-            {activeTab === "service-dashboard" && userRole === "admin" && (
+            {renderedTab === "service-dashboard" && userRole === "admin" && (
               <ServiceDashboard
                 serviceTransactions={serviceTransactions}
                 fetchServiceTransactions={fetchServiceTransactions}
@@ -627,13 +436,13 @@ export default function App() {
                 isLoading={isServiceLoading}
               />
             )}
-            {activeTab === "service-transaction" && (
+            {renderedTab === "service-transaction" && (
               <ServiceTransaction
                 onServiceSaved={handleServiceSaved}
                 fetchServiceTransactions={fetchServiceTransactions}
               />
             )}
-            {activeTab === "service-history" && userRole === "admin" && (
+            {renderedTab === "service-history" && userRole === "admin" && (
               <ServiceHistory
                 serviceTransactions={serviceTransactions}
                 setServiceTransactions={handleSetServiceTransactions}
@@ -642,7 +451,7 @@ export default function App() {
                 isLoading={isServiceLoading}
               />
             )}
-            {activeTab === "dashboard" &&
+            {renderedTab === "dashboard" &&
               userRole === "admin" &&
               (
                 <Dashboard
@@ -650,7 +459,7 @@ export default function App() {
                   dataVersion={transactionsRefreshKey}
                 />
               )}
-            {activeTab === "riwayat" && userRole === "admin" && (
+            {renderedTab === "riwayat" && userRole === "admin" && (
               <Riwayat
                 transactions={transactions}
                 setTransactions={handleSetTransactions}
@@ -660,7 +469,7 @@ export default function App() {
                 isLoading={isTransactionsLoading}
               />
             )}
-            {activeTab === "products" &&
+            {renderedTab === "products" &&
               userRole === "admin" &&
               (isProductsLoading && products.length === 0 ? (
                 <TableSkeleton />

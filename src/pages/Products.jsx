@@ -214,6 +214,9 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
               <option value="Baterai">Baterai</option>
               <option value="Baterai B+">Baterai B+</option>
               <option value="Back Glass">Back Glass</option>
+              <option value="Flex vol">Flex vol</option>
+              <option value="Flex on/off + vol">Flex on/off + vol</option>
+              <option value="Flex on/off">Flex on/off</option>
               <option value="Flexi On Off">Flexi On Off</option>
               <option value="Flexi Board Cas">Flexi Board Cas</option>
               <option value="Board Cas">Board Cas</option>

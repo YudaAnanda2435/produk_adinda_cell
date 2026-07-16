@@ -29,6 +29,142 @@ const formatRupiah = (angka) => {
 const toSearchText = (value) =>
   value === null || value === undefined ? "" : String(value).toLowerCase();
 
+const normalizeFilterValue = (value) =>
+  toSearchText(value).trim().replace(/\s+/g, " ");
+
+const getProductRowKey = (item, index) =>
+  [
+    item.id,
+    item.ID,
+    item.Id,
+    item.merk,
+    item.model,
+    item.jenis_sparepart,
+    item.harga_beli,
+    item.harga_jual,
+    index,
+  ]
+    .map((value) => String(value ?? "").trim())
+    .join("-");
+
+const getProductJenis = (product) =>
+  String(product?.jenis_sparepart ?? "").trim();
+
+const productMatchesJenis = (product, filterJenis) => {
+  if (!filterJenis) return true;
+  return normalizeFilterValue(getProductJenis(product)) ===
+    normalizeFilterValue(filterJenis);
+};
+
+const ProductTable = ({
+  products,
+  activeFilterJenis,
+  onEdit,
+  onDelete,
+}) => {
+  const tableProducts = products.filter((item) =>
+    productMatchesJenis(item, activeFilterJenis),
+  );
+
+  return (
+    <div className="bg-white dark:bg-cardDark rounded-xl shadow-sm border border-gray-100 dark:border-borderDark flex-1 min-h-[58dvh] md:min-h-0 flex flex-col overflow-hidden">
+      <div className="overflow-y-auto flex-1 no-scrollbar">
+        <table className="w-full text-left whitespace-nowrap relative">
+          <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10 shadow-sm border-b border-gray-200 outline outline-1 outline-gray-200">
+            <tr className="text-gray-600 dark:text-fontDark text-sm">
+              <th className="p-4 font-semibold">Produk</th>
+              <th className="p-4 font-semibold">Jenis</th>
+              <th className="p-4 font-semibold">Stok</th>
+              <th className="p-4 font-semibold">Harga Modal</th>
+              <th className="p-4 font-semibold">Harga Jual</th>
+              <th className="p-4 font-semibold">Keuntungan</th>
+              {/* TAMBAHAN: Judul Kolom Keterangan */}
+              <th className="p-4 font-semibold">Keterangan</th>
+              <th className="p-4 font-semibold text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody
+            key={normalizeFilterValue(activeFilterJenis) || "all-products"}
+            className="divide-y divide-gray-100"
+          >
+            {tableProducts.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="p-8 text-center text-gray-500">
+                  Tidak ada produk ditemukan.
+                </td>
+              </tr>
+            ) : (
+              tableProducts.map((item, index) => (
+                <tr key={getProductRowKey(item, index)} className="hover:bg-gray-50 dark:hover:bg-darkMode transition-colors">
+                  <td className="p-4">
+                    <div className="font-medium text-gray-800 dark:text-fontDark">
+                      {item.merk}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-fontDark">
+                      {item.model}
+                    </div>
+                  </td>
+                  <td className="p-4 text-sm text-gray-600 dark:text-fontDark">
+                    {getProductJenis(item)}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center">
+                      <span
+                        className={`font-bold ${item.stok < 6 ? "text-red-600" : "text-green-600"}`}
+                      >
+                        {item.stok}
+                      </span>
+                      {item.stok < 6 && (
+                        <span className="ml-2 flex items-center text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full uppercase tracking-wider font-bold">
+                          <AlertTriangle size={10} className="mr-1" /> Menipis
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-4 text-sm text-gray-600 dark:text-fontDark">
+                    {formatRupiah(item.harga_beli)}
+                  </td>
+                  <td className="p-4 text-sm text-gray-800 dark:text-fontDark font-medium">
+                    {formatRupiah(item.harga_jual)}
+                  </td>
+                  <td className="p-4 text-sm text-green-600 font-medium">
+                    {formatRupiah(
+                      item.keuntungan ||
+                        calculateProfit(item.harga_jual, item.harga_beli),
+                    )}
+                  </td>
+                  {/* TAMBAHAN: Sel Isi Keterangan */}
+                  <td className="p-4 text-sm text-gray-500 dark:text-fontDark max-w-[200px] truncate">
+                    {item.keterangan || "-"}
+                  </td>
+                  <td className="p-4 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => onEdit(item)}
+                        className="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                        title="Edit"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => onDelete(item.id)}
+                        className="p-1.5 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        title="Hapus"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 const defaultProductFormData = {
   merk: "",
   model: "",
@@ -38,101 +174,6 @@ const defaultProductFormData = {
   harga_jual: 0,
   keterangan: "",
 };
-
-const ProductTable = ({ products, onEdit, onDelete }) => (
-  <div className="bg-white dark:bg-cardDark rounded-xl shadow-sm border border-gray-100 dark:border-borderDark flex-1 min-h-[58dvh] md:min-h-0 flex flex-col overflow-hidden">
-    <div className="overflow-y-auto flex-1 no-scrollbar">
-      <table className="w-full text-left whitespace-nowrap relative">
-        <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10 shadow-sm border-b border-gray-200 outline outline-1 outline-gray-200">
-          <tr className="text-gray-600 dark:text-fontDark text-sm">
-            <th className="p-4 font-semibold">Produk</th>
-            <th className="p-4 font-semibold">Jenis</th>
-            <th className="p-4 font-semibold">Stok</th>
-            <th className="p-4 font-semibold">Harga Modal</th>
-            <th className="p-4 font-semibold">Harga Jual</th>
-            <th className="p-4 font-semibold">Keuntungan</th>
-            {/* TAMBAHAN: Judul Kolom Keterangan */}
-            <th className="p-4 font-semibold">Keterangan</th>
-            <th className="p-4 font-semibold text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {products.length === 0 ? (
-            <tr>
-              <td colSpan="8" className="p-8 text-center text-gray-500">
-                Tidak ada produk ditemukan.
-              </td>
-            </tr>
-          ) : (
-            products.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-darkMode transition-colors">
-                <td className="p-4">
-                  <div className="font-medium text-gray-800 dark:text-fontDark">
-                    {item.merk}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-fontDark">
-                    {item.model}
-                  </div>
-                </td>
-                <td className="p-4 text-sm text-gray-600 dark:text-fontDark">
-                  {item.jenis_sparepart}
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center">
-                    <span
-                      className={`font-bold ${item.stok < 6 ? "text-red-600" : "text-green-600"}`}
-                    >
-                      {item.stok}
-                    </span>
-                    {item.stok < 6 && (
-                      <span className="ml-2 flex items-center text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full uppercase tracking-wider font-bold">
-                        <AlertTriangle size={10} className="mr-1" /> Menipis
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="p-4 text-sm text-gray-600 dark:text-fontDark">
-                  {formatRupiah(item.harga_beli)}
-                </td>
-                <td className="p-4 text-sm text-gray-800 dark:text-fontDark font-medium">
-                  {formatRupiah(item.harga_jual)}
-                </td>
-                <td className="p-4 text-sm text-green-600 font-medium">
-                  {formatRupiah(
-                    item.keuntungan ||
-                      calculateProfit(item.harga_jual, item.harga_beli),
-                  )}
-                </td>
-                {/* TAMBAHAN: Sel Isi Keterangan */}
-                <td className="p-4 text-sm text-gray-500 dark:text-fontDark max-w-[200px] truncate">
-                  {item.keterangan || "-"}
-                </td>
-                <td className="p-4 text-center">
-                  <div className="flex justify-center gap-2">
-                    <button
-                      onClick={() => onEdit(item)}
-                      className="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                      title="Edit"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(item.id)}
-                      className="p-1.5 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                      title="Hapus"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
 
 const ProductForm = ({ onSubmit, initialData, onCancel }) => {
   const [formData, setFormData] = useState(() => ({
@@ -434,7 +475,10 @@ export default function Products({
     const matchModel = toSearchText(p.model).includes(
       toSearchText(searchModel),
     );
-    const matchJenis = filterJenis ? p.jenis_sparepart === filterJenis : true;
+    const matchJenis = filterJenis
+      ? normalizeFilterValue(p.jenis_sparepart) ===
+        normalizeFilterValue(filterJenis)
+      : true;
     return matchMerk && matchModel && matchJenis;
   });
 
@@ -479,7 +523,9 @@ export default function Products({
         <div className="flex-1">
           <select
             value={filterJenis}
-            onChange={(e) => setFilterJenis(e.target.value)}
+            onChange={(e) => {
+              setFilterJenis(e.currentTarget.value);
+            }}
             className="w-full px-3 py-3! border bg-white border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-gray-600 transition-all cursor-pointer"
           >
             <option value="">Semua Kategori Sparepart</option>
@@ -500,6 +546,7 @@ export default function Products({
 
       <ProductTable
         products={filteredProducts}
+        activeFilterJenis={filterJenis}
         onEdit={handleOpenEdit}
         onDelete={(id) => setDeleteId(id)}
       />

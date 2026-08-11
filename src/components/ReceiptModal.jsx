@@ -21,19 +21,100 @@ export default function ReceiptModal({
 }) {
   if (!receiptData) return null;
 
-  const handlePrint = () => {
-    window.print();
+  const buildReceiptImage = () =>
+    createReceiptPngDataUrl({
+      receiptData,
+      receiptItems,
+      receiptSubtotal,
+      receiptShipping,
+      receiptGrandTotal,
+    });
+
+  const loadImageSize = (src) =>
+    new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () =>
+        resolve({ width: image.naturalWidth, height: image.naturalHeight });
+      image.onerror = reject;
+      image.src = src;
+    });
+
+  const handlePrint = async () => {
+    try {
+      const dataUrl = await buildReceiptImage();
+      const imageSize = await loadImageSize(dataUrl);
+      const paperWidthMm = 58;
+      const paperHeightMm = Math.ceil(
+        (paperWidthMm * imageSize.height) / imageSize.width,
+      );
+      const printFrame = document.createElement("iframe");
+      printFrame.title = "Cetak Struk";
+      printFrame.style.position = "fixed";
+      printFrame.style.right = "0";
+      printFrame.style.bottom = "0";
+      printFrame.style.width = "0";
+      printFrame.style.height = "0";
+      printFrame.style.border = "0";
+
+      document.body.appendChild(printFrame);
+
+      const frameDocument =
+        printFrame.contentDocument || printFrame.contentWindow.document;
+
+      frameDocument.open();
+      frameDocument.write(`
+        <!doctype html>
+        <html>
+          <head>
+            <title>Struk Adinda Cell</title>
+            <style>
+              @page {
+                size: ${paperWidthMm}mm ${paperHeightMm}mm;
+                margin: 0;
+              }
+
+              html,
+              body {
+                width: ${paperWidthMm}mm;
+                margin: 0;
+                padding: 0;
+                background: #ffffff;
+              }
+
+              img {
+                display: block;
+                width: ${paperWidthMm}mm;
+                max-width: ${paperWidthMm}mm;
+                height: auto;
+                margin: 0;
+                padding: 0;
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${dataUrl}" alt="Struk Adinda Cell" />
+          </body>
+        </html>
+      `);
+      frameDocument.close();
+
+      const image = frameDocument.querySelector("img");
+      image.onload = () => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+        window.setTimeout(() => {
+          document.body.removeChild(printFrame);
+        }, 1000);
+      };
+    } catch (error) {
+      console.error("Gagal mencetak struk PNG:", error);
+      onDownloadError?.();
+    }
   };
 
   const handleDownloadPng = async () => {
     try {
-      const dataUrl = await createReceiptPngDataUrl({
-        receiptData,
-        receiptItems,
-        receiptSubtotal,
-        receiptShipping,
-        receiptGrandTotal,
-      });
+      const dataUrl = await buildReceiptImage();
       const link = document.createElement("a");
       const billNumber = String(receiptData.billNumber || Date.now()).replace(
         "#",

@@ -159,7 +159,6 @@ function Sidebar({
               >
                 Riwayat Transaksi
               </MainNavButton>
-
               <MainNavButton
                 active={activeTab === "products"}
                 onClick={() => onNavigate("products")}
@@ -167,7 +166,6 @@ function Sidebar({
               >
                 Data Stok Produk
               </MainNavButton>
-
               <div>
                 <button
                   onClick={onToggleServiceMenu}

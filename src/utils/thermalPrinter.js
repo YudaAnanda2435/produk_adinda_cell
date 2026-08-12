@@ -12,7 +12,7 @@ const ESC = "\x1B";
 const GS = "\x1D";
 const RECEIPT_COLUMNS = 32;
 const PRINTER_STORAGE_KEY = "adinda-thermal-printer";
-const LOGO_MAX_WIDTH = 96;
+const LOGO_MAX_WIDTH = 64;
 
 const normalizeText = (value) =>
   String(value ?? "-")
@@ -120,6 +120,7 @@ const buildBodyText = ({
   return `${lines.join("\n")}\n`;
 };
 
+
 const loadImage = (src) =>
   new Promise((resolve) => {
     const image = new Image();
@@ -136,23 +137,27 @@ const createLogoBase64 = async () => {
   const ratio = Math.min(1, LOGO_MAX_WIDTH / image.width);
   const width = Math.max(1, Math.round(image.width * ratio));
   const height = Math.max(1, Math.round(image.height * ratio));
+
+  // Width harus kelipatan 8 agar tidak ada bitmap padding issue
+  const alignedWidth = Math.ceil(width / 8) * 8;
+
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
 
-  canvas.width = width;
+  canvas.width = alignedWidth;
   canvas.height = height;
   context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, width, height);
+  context.fillRect(0, 0, alignedWidth, height);
   context.drawImage(image, 0, 0, width, height);
 
-  const imageData = context.getImageData(0, 0, width, height);
+  const imageData = context.getImageData(0, 0, alignedWidth, height);
   for (let index = 0; index < imageData.data.length; index += 4) {
     const red = imageData.data[index];
     const green = imageData.data[index + 1];
     const blue = imageData.data[index + 2];
     const alpha = imageData.data[index + 3];
     const luma = 0.299 * red + 0.587 * green + 0.114 * blue;
-    const value = alpha < 80 || luma > 150 ? 255 : 0;
+    const value = alpha < 80 || luma > 128 ? 255 : 0;
     imageData.data[index] = value;
     imageData.data[index + 1] = value;
     imageData.data[index + 2] = value;
@@ -199,7 +204,7 @@ const buildEscPosTextCommands = (receiptPayload) =>
     `${ESC}E\x00`,
     buildBodyText(receiptPayload),
     `${ESC}a\x01`,
-    "TERIMA KASIH\n\n\n\n\n\n\n\n",
+    "TERIMA KASIH\n\n\n\n\n",
     `${ESC}a\x00`,
     `${GS}V\x42\x00`,
   ].join("");
@@ -210,11 +215,12 @@ const buildEscPosPrintData = async (receiptPayload) => {
     {
       type: "raw",
       format: "command",
-      data: `${ESC}@${ESC}t\x00${ESC}a\x01`,
+      data: `${ESC}@${ESC}t\x00`,
     },
   ];
 
   if (logoBase64) {
+    // Set center alignment sebelum cetak logo
     printData.push({
       type: "raw",
       format: "command",
@@ -227,14 +233,14 @@ const buildEscPosPrintData = async (receiptPayload) => {
       data: logoBase64,
       options: {
         language: "escpos",
-        dotDensity: "double",
+        dotDensity: "single",
         threshold: 128,
       },
     });
     printData.push({
       type: "raw",
       format: "command",
-      data: "\n",
+      data: `${ESC}a\x00\n`,
     });
   }
 

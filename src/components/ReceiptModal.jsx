@@ -8,6 +8,7 @@ import {
   RECEIPT_STORE_NAME,
   RECEIPT_TAGLINE,
 } from "../utils/receipt";
+import { printThermalReceipt } from "../utils/thermalPrinter";
 
 export default function ReceiptModal({
   receiptData,
@@ -30,84 +31,20 @@ export default function ReceiptModal({
       receiptGrandTotal,
     });
 
-  const loadImageSize = (src) =>
-    new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = () =>
-        resolve({ width: image.naturalWidth, height: image.naturalHeight });
-      image.onerror = reject;
-      image.src = src;
-    });
-
   const handlePrint = async () => {
     try {
-      const dataUrl = await buildReceiptImage();
-      const imageSize = await loadImageSize(dataUrl);
-      const paperWidthMm = 58;
-      const paperHeightMm = Math.ceil(
-        (paperWidthMm * imageSize.height) / imageSize.width,
-      );
-      const printFrame = document.createElement("iframe");
-      printFrame.title = "Cetak Struk";
-      printFrame.style.position = "fixed";
-      printFrame.style.right = "0";
-      printFrame.style.bottom = "0";
-      printFrame.style.width = "0";
-      printFrame.style.height = "0";
-      printFrame.style.border = "0";
-
-      document.body.appendChild(printFrame);
-
-      const frameDocument =
-        printFrame.contentDocument || printFrame.contentWindow.document;
-
-      frameDocument.open();
-      frameDocument.write(`
-        <!doctype html>
-        <html>
-          <head>
-            <title>Struk Adinda Cell</title>
-            <style>
-              @page {
-                size: ${paperWidthMm}mm ${paperHeightMm}mm;
-                margin: 0;
-              }
-
-              html,
-              body {
-                width: ${paperWidthMm}mm;
-                margin: 0;
-                padding: 0;
-                background: #ffffff;
-              }
-
-              img {
-                display: block;
-                width: ${paperWidthMm}mm;
-                max-width: ${paperWidthMm}mm;
-                height: auto;
-                margin: 0;
-                padding: 0;
-              }
-            </style>
-          </head>
-          <body>
-            <img src="${dataUrl}" alt="Struk Adinda Cell" />
-          </body>
-        </html>
-      `);
-      frameDocument.close();
-
-      const image = frameDocument.querySelector("img");
-      image.onload = () => {
-        printFrame.contentWindow.focus();
-        printFrame.contentWindow.print();
-        window.setTimeout(() => {
-          document.body.removeChild(printFrame);
-        }, 1000);
-      };
+      await printThermalReceipt({
+        receiptData,
+        receiptItems,
+        receiptSubtotal,
+        receiptShipping,
+        receiptGrandTotal,
+      });
     } catch (error) {
-      console.error("Gagal mencetak struk PNG:", error);
+      console.error("Gagal mencetak struk thermal:", error);
+      window.alert(
+        "Gagal cetak thermal. Pastikan QZ Tray sudah terinstall, sedang berjalan, dan printer thermal terhubung.",
+      );
       onDownloadError?.();
     }
   };
@@ -298,7 +235,7 @@ export default function ReceiptModal({
               onClick={handlePrint}
               className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-200 transition-colors hover:bg-blue-700"
             >
-              <Printer size={16} /> Cetak
+              <Printer size={16} /> Cetak Thermal
             </button>
             <button
               onClick={onClose}

@@ -2,6 +2,7 @@ import qz from "qz-tray";
 import {
   RECEIPT_ADDRESS_LINES,
   RECEIPT_CONTACT,
+  RECEIPT_LOGO_SRC,
   RECEIPT_STORE_NAME,
   RECEIPT_TAGLINE,
   formatReceiptAmount,
@@ -11,6 +12,7 @@ const ESC = "\x1B";
 const GS = "\x1D";
 const RECEIPT_COLUMNS = 32;
 const PRINTER_STORAGE_KEY = "adinda-thermal-printer";
+const LOGO_MAX_WIDTH = 180;
 
 const normalizeText = (value) =>
   String(value ?? "-")
@@ -116,10 +118,36 @@ const buildReceiptText = ({
   return `${lines.join("\n")}\n\n\n`;
 };
 
-const buildEscPosCommands = (receiptPayload) =>
+const loadImage = (src) =>
+  new Promise((resolve) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+
+const createLogoBase64 = async () => {
+  const image = await loadImage(RECEIPT_LOGO_SRC);
+  if (!image) return null;
+
+  const ratio = Math.min(1, LOGO_MAX_WIDTH / image.width);
+  const width = Math.max(1, Math.round(image.width * ratio));
+  const height = Math.max(1, Math.round(image.height * ratio));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  canvas.width = width;
+  canvas.height = height;
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  return canvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+};
+
+const buildEscPosTextCommands = (receiptPayload) =>
   [
-    `${ESC}@`,
-    `${ESC}t\x00`,
     `${ESC}a\x01`,
     `${ESC}E\x01`,
     `${ESC}!\x08`,
@@ -129,6 +157,45 @@ const buildEscPosCommands = (receiptPayload) =>
     `${ESC}a\x00`,
     `${GS}V\x42\x00`,
   ].join("");
+
+const buildEscPosPrintData = async (receiptPayload) => {
+  const logoBase64 = await createLogoBase64();
+  const printData = [
+    {
+      type: "raw",
+      format: "command",
+      data: `${ESC}@${ESC}t\x00${ESC}a\x01`,
+    },
+  ];
+
+  if (logoBase64) {
+    printData.push({
+      type: "raw",
+      format: "image",
+      flavor: "base64",
+      data: logoBase64,
+      options: {
+        language: "escpos",
+        dotDensity: "double",
+        imageEncoding: "esc_asterisk",
+        threshold: 160,
+      },
+    });
+    printData.push({
+      type: "raw",
+      format: "command",
+      data: "\n",
+    });
+  }
+
+  printData.push({
+    type: "raw",
+    format: "command",
+    data: buildEscPosTextCommands(receiptPayload),
+  });
+
+  return printData;
+};
 
 const ensureConnection = async () => {
   if (!qz.websocket.isActive()) {
@@ -157,13 +224,7 @@ export const printThermalReceipt = async (receiptPayload) => {
     altPrinting: true,
   });
 
-  await qz.print(config, [
-    {
-      type: "raw",
-      format: "command",
-      data: buildEscPosCommands(receiptPayload),
-    },
-  ]);
+  await qz.print(config, await buildEscPosPrintData(receiptPayload));
 
   return printer;
 };

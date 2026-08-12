@@ -120,7 +120,6 @@ const buildBodyText = ({
   return `${lines.join("\n")}\n`;
 };
 
-
 const loadImage = (src) =>
   new Promise((resolve) => {
     const image = new Image();
@@ -130,7 +129,10 @@ const loadImage = (src) =>
     image.src = src;
   });
 
-const createLogoBase64 = async () => {
+// Membangun ESC/POS GS v 0 raster image command secara manual.
+// Metode ini identik dengan cara kerja app thermal di HP (Bluetooth),
+// sehingga kompatibel dengan printer yang tidak support QZ Tray image handler.
+const buildLogoRasterCommand = async () => {
   const image = await loadImage(RECEIPT_LOGO_SRC);
   if (!image) return null;
 
@@ -138,34 +140,56 @@ const createLogoBase64 = async () => {
   const width = Math.max(1, Math.round(image.width * ratio));
   const height = Math.max(1, Math.round(image.height * ratio));
 
-  // Width harus kelipatan 8 agar tidak ada bitmap padding issue
-  const alignedWidth = Math.ceil(width / 8) * 8;
-
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
-
-  canvas.width = alignedWidth;
+  canvas.width = width;
   canvas.height = height;
   context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, alignedWidth, height);
+  context.fillRect(0, 0, width, height);
   context.drawImage(image, 0, 0, width, height);
 
-  const imageData = context.getImageData(0, 0, alignedWidth, height);
-  for (let index = 0; index < imageData.data.length; index += 4) {
-    const red = imageData.data[index];
-    const green = imageData.data[index + 1];
-    const blue = imageData.data[index + 2];
-    const alpha = imageData.data[index + 3];
-    const luma = 0.299 * red + 0.587 * green + 0.114 * blue;
-    const value = alpha < 80 || luma > 128 ? 255 : 0;
-    imageData.data[index] = value;
-    imageData.data[index + 1] = value;
-    imageData.data[index + 2] = value;
-    imageData.data[index + 3] = 255;
-  }
-  context.putImageData(imageData, 0, 0);
+  const imageData = context.getImageData(0, 0, width, height);
 
-  return canvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+  // Konversi ke 1-bit bitmap: 1 byte = 8 pixel horizontal, MSB kiri
+  const bytesPerRow = Math.ceil(width / 8);
+  const bitmapBytes = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
+      let byte = 0;
+      for (let bit = 0; bit < 8; bit++) {
+        const x = byteIdx * 8 + bit;
+        if (x < width) {
+          const px = (y * width + x) * 4;
+          const r = imageData.data[px];
+          const g = imageData.data[px + 1];
+          const b = imageData.data[px + 2];
+          const a = imageData.data[px + 3];
+          const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+          // Pixel gelap (logo) = bit 1
+          if (a >= 80 && luma <= 128) byte |= 0x80 >> bit;
+        }
+      }
+      bitmapBytes.push(byte);
+    }
+  }
+
+  // GS v 0 command: 1D 76 30 00 xL xH yL yH [data]
+  const xL = bytesPerRow & 0xff;
+  const xH = (bytesPerRow >> 8) & 0xff;
+  const yL = height & 0xff;
+  const yH = (height >> 8) & 0xff;
+
+  const command = [
+    0x1b, 0x61, 0x01,             // ESC a 1 — center alignment
+    0x1d, 0x76, 0x30, 0x00,       // GS v 0, normal density
+    xL, xH, yL, yH,               // lebar (bytes) dan tinggi (dots)
+    ...bitmapBytes,                // data bitmap
+    0x1b, 0x61, 0x00, 0x0a,       // ESC a 0 — kembali left, + line feed
+  ];
+
+  // Encode ke base64 untuk dikirim sebagai raw command
+  return btoa(String.fromCharCode(...command));
 };
 
 const centerText = (text, width = RECEIPT_COLUMNS) => {
@@ -210,7 +234,7 @@ const buildEscPosTextCommands = (receiptPayload) =>
   ].join("");
 
 const buildEscPosPrintData = async (receiptPayload) => {
-  const logoBase64 = await createLogoBase64();
+  const logoRasterCommand = await buildLogoRasterCommand();
   const printData = [
     {
       type: "raw",
@@ -219,28 +243,13 @@ const buildEscPosPrintData = async (receiptPayload) => {
     },
   ];
 
-  if (logoBase64) {
-    // Set center alignment sebelum cetak logo
+  if (logoRasterCommand) {
+    // Kirim GS v 0 raster command secara langsung sebagai raw bytes
     printData.push({
       type: "raw",
       format: "command",
-      data: `${ESC}a\x01`,
-    });
-    printData.push({
-      type: "raw",
-      format: "image",
       flavor: "base64",
-      data: logoBase64,
-      options: {
-        language: "escpos",
-        dotDensity: "single",
-        threshold: 128,
-      },
-    });
-    printData.push({
-      type: "raw",
-      format: "command",
-      data: `${ESC}a\x00\n`,
+      data: logoRasterCommand,
     });
   }
 

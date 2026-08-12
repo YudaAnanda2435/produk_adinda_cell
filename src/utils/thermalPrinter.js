@@ -12,7 +12,7 @@ const ESC = "\x1B";
 const GS = "\x1D";
 const RECEIPT_COLUMNS = 32;
 const PRINTER_STORAGE_KEY = "adinda-thermal-printer";
-const LOGO_MAX_WIDTH = 180;
+const LOGO_MAX_WIDTH = 96;
 
 const normalizeText = (value) =>
   String(value ?? "-")
@@ -20,12 +20,6 @@ const normalizeText = (value) =>
     .replace(/[^\x20-\x7E]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-
-const centerText = (text) => {
-  const normalized = normalizeText(text);
-  const padding = Math.max(0, Math.floor((RECEIPT_COLUMNS - normalized.length) / 2));
-  return `${" ".repeat(padding)}${normalized}`;
-};
 
 const divider = () => "-".repeat(RECEIPT_COLUMNS);
 
@@ -66,11 +60,24 @@ const pairLine = (left, right, width = RECEIPT_COLUMNS) => {
   return `${cleanLeft.padEnd(leftWidth, " ")} ${cleanRight.padStart(rightWidth, " ")}`;
 };
 
-const addCentered = (lines, text) => {
-  wrapText(text, RECEIPT_COLUMNS).forEach((line) => lines.push(centerText(line)));
+const buildHeaderText = () => {
+  const lines = [];
+  wrapText(RECEIPT_STORE_NAME, RECEIPT_COLUMNS).forEach((line) =>
+    lines.push(line),
+  );
+  wrapText(RECEIPT_TAGLINE, RECEIPT_COLUMNS).forEach((line) =>
+    lines.push(line),
+  );
+  RECEIPT_ADDRESS_LINES.forEach((addressLine) => {
+    wrapText(addressLine, RECEIPT_COLUMNS).forEach((line) => lines.push(line));
+  });
+  wrapText(RECEIPT_CONTACT, RECEIPT_COLUMNS).forEach((line) =>
+    lines.push(line),
+  );
+  return `${lines.join("\n")}\n`;
 };
 
-const buildReceiptText = ({
+const buildBodyText = ({
   receiptData,
   receiptItems,
   receiptSubtotal,
@@ -79,10 +86,6 @@ const buildReceiptText = ({
 }) => {
   const lines = [];
 
-  addCentered(lines, RECEIPT_STORE_NAME);
-  addCentered(lines, RECEIPT_TAGLINE);
-  RECEIPT_ADDRESS_LINES.forEach((line) => addCentered(lines, line));
-  addCentered(lines, RECEIPT_CONTACT);
   lines.push(divider());
   lines.push(pairLine(`Bill ${receiptData.billNumber}`, receiptData.tanggal));
   lines.push(pairLine("", receiptData.jam));
@@ -113,9 +116,8 @@ const buildReceiptText = ({
   lines.push(pairLine("Ongkir", formatReceiptAmount(receiptShipping)));
   lines.push(pairLine("Total bayar", formatReceiptAmount(receiptGrandTotal)));
   lines.push(divider());
-  addCentered(lines, "TERIMA KASIH");
 
-  return `${lines.join("\n")}\n\n\n`;
+  return `${lines.join("\n")}\n`;
 };
 
 const loadImage = (src) =>
@@ -143,17 +145,61 @@ const createLogoBase64 = async () => {
   context.fillRect(0, 0, width, height);
   context.drawImage(image, 0, 0, width, height);
 
+  const imageData = context.getImageData(0, 0, width, height);
+  for (let index = 0; index < imageData.data.length; index += 4) {
+    const red = imageData.data[index];
+    const green = imageData.data[index + 1];
+    const blue = imageData.data[index + 2];
+    const alpha = imageData.data[index + 3];
+    const luma = 0.299 * red + 0.587 * green + 0.114 * blue;
+    const value = alpha < 80 || luma > 150 ? 255 : 0;
+    imageData.data[index] = value;
+    imageData.data[index + 1] = value;
+    imageData.data[index + 2] = value;
+    imageData.data[index + 3] = 255;
+  }
+  context.putImageData(imageData, 0, 0);
+
   return canvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+};
+
+const centerText = (text, width = RECEIPT_COLUMNS) => {
+  const cleaned = normalizeText(text);
+  if (cleaned.length >= width) return cleaned;
+  const padding = Math.floor((width - cleaned.length) / 2);
+  return " ".repeat(padding) + cleaned;
+};
+
+const buildHeaderTextCentered = () => {
+  const lines = [];
+  wrapText(RECEIPT_STORE_NAME, RECEIPT_COLUMNS).forEach((line) =>
+    lines.push(centerText(line)),
+  );
+  wrapText(RECEIPT_TAGLINE, RECEIPT_COLUMNS).forEach((line) =>
+    lines.push(centerText(line)),
+  );
+  RECEIPT_ADDRESS_LINES.forEach((addressLine) => {
+    wrapText(addressLine, RECEIPT_COLUMNS).forEach((line) =>
+      lines.push(centerText(line)),
+    );
+  });
+  wrapText(RECEIPT_CONTACT, RECEIPT_COLUMNS).forEach((line) =>
+    lines.push(centerText(line)),
+  );
+  return `${lines.join("\n")}\n`;
 };
 
 const buildEscPosTextCommands = (receiptPayload) =>
   [
-    `${ESC}a\x01`,
+    `${ESC}a\x00`,
     `${ESC}E\x01`,
-    `${ESC}!\x08`,
-    buildReceiptText(receiptPayload),
+    `${ESC}!\x00`,
+    buildHeaderTextCentered(),
     `${ESC}!\x00`,
     `${ESC}E\x00`,
+    buildBodyText(receiptPayload),
+    `${ESC}a\x01`,
+    "TERIMA KASIH\n\n\n\n\n\n\n\n",
     `${ESC}a\x00`,
     `${GS}V\x42\x00`,
   ].join("");
@@ -171,14 +217,18 @@ const buildEscPosPrintData = async (receiptPayload) => {
   if (logoBase64) {
     printData.push({
       type: "raw",
+      format: "command",
+      data: `${ESC}a\x01`,
+    });
+    printData.push({
+      type: "raw",
       format: "image",
       flavor: "base64",
       data: logoBase64,
       options: {
         language: "escpos",
         dotDensity: "double",
-        imageEncoding: "esc_asterisk",
-        threshold: 160,
+        threshold: 128,
       },
     });
     printData.push({

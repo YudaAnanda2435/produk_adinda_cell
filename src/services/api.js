@@ -11,6 +11,23 @@ const buildUrl = (params = {}) => {
   return url.toString();
 };
 
+const fetchJsonWithRetry = async (url, options = {}, retries = 3, backoff = 500) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      console.warn(`Fetch gagal, mencoba ulang (${i + 1}/${retries})...`, error);
+      await new Promise((res) => setTimeout(res, backoff * Math.pow(2, i))); // Exponential backoff: 500ms, 1000ms, 2000ms
+    }
+  }
+};
+
 const CACHE_PREFIX = "adinda-cache:";
 const CACHE_TTL = 5 * 60 * 1000;
 const LONG_CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -214,8 +231,8 @@ const enrichSummaryChartWithLaba = async (
 
 export const getProducts = async () => {
   try {
-    const response = await fetch(API_URL);
-    const products = normalizeArrayResponse(await response.json());
+    const data = await fetchJsonWithRetry(API_URL);
+    const products = normalizeArrayResponse(data);
     writeCache("products", products);
     return products;
   } catch (error) {
@@ -229,7 +246,7 @@ export const getCachedProducts = () =>
 
 const sendPostRequest = async (action, data) => {
   try {
-    const response = await fetch(API_URL, {
+    const result = await fetchJsonWithRetry(API_URL, {
       method: "POST",
       // Jangan gunakan mode: "no-cors" agar React bisa membaca balasan server
       headers: {
@@ -239,7 +256,6 @@ const sendPostRequest = async (action, data) => {
     });
 
     // Tangkap dan kembalikan jawaban asli dari Google Apps Script
-    const result = await response.json();
     return result;
   } catch (error) {
     console.error(`Gagal melakukan operasi ${action}`, error);
@@ -254,7 +270,7 @@ export const getTransactions = async ({
   refreshKey,
 } = {}) => {
   try {
-    const response = await fetch(
+    const data = await fetchJsonWithRetry(
       buildUrl({
         sheet: "transaksi",
         startDate,
@@ -264,7 +280,7 @@ export const getTransactions = async ({
       }),
       { cache: "no-store" },
     );
-    return normalizeArrayResponse(await response.json());
+    return normalizeArrayResponse(data);
   } catch (error) {
     console.error("Gagal mengambil data transaksi", error);
     return [];
@@ -277,7 +293,7 @@ export const getServiceTransactions = async ({
   refreshKey,
 } = {}) => {
   try {
-    const response = await fetch(
+    const data = await fetchJsonWithRetry(
       buildUrl({
         sheet: "service_transactions",
         startDate,
@@ -286,7 +302,7 @@ export const getServiceTransactions = async ({
       }),
       { cache: "no-store" },
     );
-    return normalizeArrayResponse(await response.json());
+    return normalizeArrayResponse(data);
   } catch (error) {
     console.error("Gagal mengambil data service", error);
     return [];
@@ -299,7 +315,7 @@ export const getDashboardSummary = async ({
   refreshKey,
 } = {}) => {
   try {
-    const response = await fetch(
+    const data = await fetchJsonWithRetry(
       buildUrl({
         action: "dashboard_summary",
         sheet: "dashboard",
@@ -308,7 +324,7 @@ export const getDashboardSummary = async ({
         refresh: refreshKey,
       }),
     );
-    const summary = normalizeDashboardSummary(await response.json());
+    const summary = normalizeDashboardSummary(data);
     if (summary) {
       const enrichedSummary = await enrichSummaryChartWithLaba(
         summary,

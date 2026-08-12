@@ -1,8 +1,5 @@
 export const API_URL =
-  "https://script.google.com/macros/s/AKfycbzBeENMmZIgG_j3ev3EtjePLn6eQd38AXSMZ3P0vYV7Vo5z5TGMGrrsNuPnQ9hQP35n/exec";
-  // "https://script.google.com/macros/s/AKfycbwqxg4GnOmg7n1z1-00PtCPQYM9T68QpiwSY8dyjDxwnFp41RhUTxp1_JZNtAAtvbiy/exec";
-
-// "https://script.google.com/macros/s/AKfycbxHQ_T4DJulSvfZ1lifki19J_0AZvYhtyj2zydNlJXcG3Xw2S7YUPPatXA9AmDNGSrqyw/exec";
+  "https://script.google.com/macros/s/AKfycbzWTooTwAVltbtRBi8_xpZ8wiGZksjaNb4TXliO4KtzUTGwrpSEKTYqtfU00jJPleTm/exec";
 
 const buildUrl = (params = {}) => {
   const url = new URL(API_URL);
@@ -172,8 +169,7 @@ const normalizeDashboardSummary = (payload) => {
     barChartData: rawChartData.map((item) => ({
       ...item,
       omzet: Number(item.omzet ?? item.omzetTotal ?? item.omzet_total) || 0,
-      laba:
-        Number(item.laba ?? item.labaBersih ?? item.laba_bersih) || 0,
+      laba: Number(item.laba ?? item.labaBersih ?? item.laba_bersih) || 0,
     })),
   };
 };
@@ -185,10 +181,19 @@ const chartHasLaba = (chartData = []) =>
     ),
   );
 
-const enrichSummaryChartWithLaba = async (summary, startDate, endDate, refreshKey) => {
+const enrichSummaryChartWithLaba = async (
+  summary,
+  startDate,
+  endDate,
+  refreshKey,
+) => {
   if (!summary || summary.chartHasLaba) return summary;
 
-  const transactions = await getTransactions({ startDate, endDate, refreshKey });
+  const transactions = await getTransactions({
+    startDate,
+    endDate,
+    refreshKey,
+  });
   const summaryWithLaba = calculateDashboardSummary(
     transactions,
     startDate,
@@ -318,7 +323,11 @@ export const getDashboardSummary = async ({
     console.warn("Endpoint ringkasan dashboard belum tersedia.", error);
   }
 
-  const transactions = await getTransactions({ startDate, endDate, refreshKey });
+  const transactions = await getTransactions({
+    startDate,
+    endDate,
+    refreshKey,
+  });
   const summary = calculateDashboardSummary(transactions, startDate, endDate);
   writeCache(dashboardCacheKey({ startDate, endDate }), summary);
   return summary;

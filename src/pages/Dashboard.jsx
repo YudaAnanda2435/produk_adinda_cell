@@ -72,10 +72,10 @@ const DashboardCard = ({ title, value, icon, colorClass, subtitle }) => (
   <div className="bg-white font-default dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-darkMode flex items-center space-x-4 transition-all hover:shadow-md">
     <div className={`p-4 rounded-xl ${colorClass} shadow-sm`}>{icon}</div>
     <div>
-      <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-100 font-bold">
+      <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-100 font-semibold">
         {title}
       </p>
-      <h3 className="text-[16px] font-bold text-gray-800 dark:text-gray-100">
+      <h3 className="text-[16px] font-semibold text-gray-800 dark:text-gray-100">
         {value}
       </h3>
       {subtitle && (
@@ -222,7 +222,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1
-            className="text-2xl font-bold text-gray-800 dark:text-fontDark"
+            className="text-2xl font-semibold text-gray-800 dark:text-fontDark"
             // data-aos="zoom-in"
             // data-aos-delay="400"
             // data-aos-duration="800"
@@ -242,7 +242,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
         <div className="relative z-20">
           <button
             onClick={() => setIsDateOpen(!isDateOpen)}
-            className="flex items-center gap-2 bg-white dark:bg-darkMode border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 shadow-sm hover:border-blue-500 dark:hover:border-blue-200 transition-all text-sm font-bold text-gray-700 dark:text-fontDark w-full md:w-auto justify-center"
+            className="flex items-center gap-2 bg-white dark:bg-darkMode border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 shadow-sm hover:border-blue-500 dark:hover:border-blue-200 transition-all text-sm font-semibold text-gray-700 dark:text-fontDark w-full md:w-auto justify-center"
           >
             <Calendar
               size={18}
@@ -266,7 +266,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
               <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-darkMode border border-gray-200 rounded-2xl shadow-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b pb-3">
-                    <h3 className="font-bold text-gray-800 dark:text-fontDark">
+                    <h3 className="font-semibold text-gray-800 dark:text-fontDark">
                       Pilih Rentang Waktu
                     </h3>
                   </div>
@@ -298,7 +298,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
 
                   <button
                     onClick={() => setIsDateOpen(false)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors mt-2"
                   >
                     Terapkan Filter
                   </button>
@@ -397,7 +397,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
         {/* Grafik Batang */}
         <div className="lg:col-span-2 bg-white dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex flex-col w-full min-h-[350px]">
           <h3
-            className="text-sm font-bold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4"
+            className="text-sm font-semibold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4"
             // data-aos="zoom-in"
             // data-aos-delay="400"
             // data-aos-duration="800"
@@ -495,7 +495,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
         {/* Grafik Lingkaran (Sudah ditambahkan Width & Height) */}
         <div className="bg-white dark:bg-darkMode p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex flex-col min-h-[350px]">
           <h3
-            className="text-sm font-bold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4"
+            className="text-sm font-semibold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4"
             // data-aos="zoom-in"
             // data-aos-delay="400"
             // data-aos-duration="800"
@@ -539,7 +539,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
                   {pieChartData.slice(0, 6).map((item) => (
                     <div
                       key={item.id}
-                      className="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] font-bold text-gray-600 dark:bg-slate-800 dark:text-gray-300"
+                      className="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] font-semibold text-gray-600 dark:bg-slate-800 dark:text-gray-300"
                     >
                       {item.label}: {item.value}
                     </div>
@@ -557,7 +557,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
 
       {stokKritis.length > 0 && (
         <div className="bg-red-50 dark:bg-darkMode border border-red-100 dark:border-borderDark p-4 md:p-6 rounded-2xl shadow-sm flex max-h-[52dvh] md:max-h-[420px] flex-col overflow-hidden">
-          <div className="flex shrink-0 items-center justify-between gap-3 text-red-700 dark:text-red-400 font-bold mb-4">
+          <div className="flex shrink-0 items-center justify-between gap-3 text-red-700 dark:text-red-400 font-semibold mb-4">
             <div className="flex min-w-0 items-center gap-2">
               <AlertTriangle size={20} className="shrink-0 animate-bounce" />
               <h2 className="truncate text-base md:text-lg">
@@ -590,7 +590,7 @@ const Dashboard = ({ products = [], dataVersion = 0 }) => {
                     className="text-sm transition-colors hover:bg-red-50 dark:hover:bg-darkMode"
                   >
                     <td className="px-3 py-3">
-                      <div className="truncate font-bold text-gray-800 dark:text-fontDark">
+                      <div className="truncate font-semibold text-gray-800 dark:text-fontDark">
                         {item.merk || "-"}
                       </div>
                       <div className="truncate text-[10px] font-medium uppercase tracking-tighter text-gray-500 dark:text-gray-200">

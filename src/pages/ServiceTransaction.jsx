@@ -136,7 +136,7 @@ export default function ServiceTransaction({
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-fontDark flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-fontDark flex items-center gap-2">
             <Wrench className="text-blue-600" /> Transaksi Service
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -152,7 +152,7 @@ export default function ServiceTransaction({
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 Nama Pelanggan
               </label>
               <input
@@ -164,7 +164,7 @@ export default function ServiceTransaction({
               />
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 No. HP
               </label>
               <input
@@ -176,7 +176,7 @@ export default function ServiceTransaction({
               />
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 Perangkat
               </label>
               <input
@@ -189,14 +189,14 @@ export default function ServiceTransaction({
               />
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 Metode Pembayaran
               </label>
               <select
                 name="metode_pembayaran"
                 value={formData.metode_pembayaran}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="Tunai">Tunai</option>
                 <option value="QRIS">QRIS</option>
@@ -205,7 +205,7 @@ export default function ServiceTransaction({
             </div>
             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] gap-4">
               <div>
-                <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                   Keluhan / Pekerjaan
                 </label>
                 <input
@@ -217,7 +217,7 @@ export default function ServiceTransaction({
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                   Garansi
                 </label>
                 <input
@@ -233,7 +233,7 @@ export default function ServiceTransaction({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 Sparepart / Komponen
               </label>
               <input
@@ -242,12 +242,12 @@ export default function ServiceTransaction({
                 min="0"
                 value={formData.modal_sparepart}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] font-bold text-gray-800 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] font-semibold text-gray-800 outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="0 jika tidak ada yang diganti"
               />
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 Jasa Pengerjaan
               </label>
               <input
@@ -256,7 +256,7 @@ export default function ServiceTransaction({
                 min="0"
                 value={formData.jasa_pengerjaan}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] font-semibold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Laba service"
                 required
               />
@@ -266,7 +266,7 @@ export default function ServiceTransaction({
           <button
             type="submit"
             disabled={loading}
-            className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 disabled:bg-slate-300"
+            className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 disabled:bg-slate-300"
           >
             <Save size={18} /> Simpan Transaksi Service
           </button>
@@ -275,7 +275,7 @@ export default function ServiceTransaction({
         <div className="bg-white dark:bg-darkMode rounded-2xl shadow-sm border border-gray-100 dark:border-borderDark p-5 h-fit">
           <div className="flex items-center gap-2 text-blue-600 mb-4">
             <ClipboardCheck size={22} />
-            <h2 className="font-black text-gray-800 dark:text-fontDark">
+            <h2 className="font-semibold text-gray-800 dark:text-fontDark">
               Ringkasan
             </h2>
           </div>
@@ -284,7 +284,7 @@ export default function ServiceTransaction({
               <span className="text-gray-500 dark:text-gray-300">
                 Sparepart / Modal
               </span>
-              <span className="font-black text-gray-800 dark:text-fontDark">
+              <span className="font-semibold text-gray-800 dark:text-fontDark">
                 {formatRupiah(sparepartCost)}
               </span>
             </div>
@@ -292,7 +292,7 @@ export default function ServiceTransaction({
               <span className="text-gray-500 dark:text-gray-300">
                 Jasa Pengerjaan
               </span>
-              <span className="font-black text-blue-700">
+              <span className="font-semibold text-blue-700">
                 {formatRupiah(jasaPengerjaan)}
               </span>
             </div>
@@ -300,15 +300,15 @@ export default function ServiceTransaction({
               <span className="text-gray-500 dark:text-gray-300">
                 Total Bayar
               </span>
-              <span className="font-black text-gray-800 dark:text-fontDark">
+              <span className="font-semibold text-gray-800 dark:text-fontDark">
                 {formatRupiah(totalBayar)}
               </span>
             </div>
             <div className="border-t border-gray-100 pt-3 flex justify-between">
-              <span className="font-bold text-gray-600 dark:text-gray-200">
+              <span className="font-semibold text-gray-600 dark:text-gray-200">
                 Laba Service
               </span>
-              <span className="font-black text-green-600">
+              <span className="font-semibold text-green-600">
                 {formatRupiah(labaService)}
               </span>
             </div>

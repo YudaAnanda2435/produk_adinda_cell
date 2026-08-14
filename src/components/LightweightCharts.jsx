@@ -28,7 +28,7 @@ export const SimpleBarChart = ({
 
   return (
     <div className={`flex flex-col ${heightClass}`}>
-      <div className="mb-3 flex flex-wrap gap-3 text-[10px] font-bold uppercase text-gray-500 dark:text-gray-200">
+      <div className="mb-3 flex flex-wrap gap-3 text-[10px] font-semibold uppercase text-gray-500 dark:text-gray-200">
         {series.map((serie) => (
           <div key={serie.dataKey} className="flex items-center gap-1.5">
             <span
@@ -91,7 +91,7 @@ export const SimpleBarChart = ({
                   );
                 })}
               </div>
-              <div className="truncate text-center text-[10px] font-bold text-gray-500 dark:text-gray-300">
+              <div className="truncate text-center text-[10px] font-semibold text-gray-500 dark:text-gray-300">
                 {item.label}
               </div>
             </div>
@@ -185,7 +185,7 @@ export const SimpleDonutChart = ({
         {data.slice(0, 6).map((item, index) => (
           <div
             key={item.id ?? item.label}
-            className="rounded-md bg-gray-100 px-2 py-1 text-[10px] font-bold text-gray-600 dark:bg-slate-800 dark:text-gray-200"
+            className="rounded-md bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600 dark:bg-slate-800 dark:text-gray-200"
           >
             <span
               className="mr-1 inline-block h-2 w-2 rounded-sm"

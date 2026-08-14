@@ -146,13 +146,13 @@ export default function ReceiptModal({
               }}
               className="mx-auto mb-1.5 h-14 w-auto object-contain grayscale"
             />
-            <h2 className="text-[30px] font-black leading-none">
+            <h2 className="text-[30px] font-semibold leading-none">
               {RECEIPT_STORE_NAME}
             </h2>
-            <p className="mt-1 text-[16px] font-black leading-tight text-slate-800">
+            <p className="mt-1 text-[16px] font-semibold leading-tight text-slate-800">
               {RECEIPT_TAGLINE}
             </p>
-            <div className="mt-1.5 text-[17px] font-black leading-tight text-slate-700">
+            <div className="mt-1.5 text-[17px] font-semibold leading-tight text-slate-700">
               {RECEIPT_ADDRESS_LINES.map((line) => (
                 <p key={line}>{line}</p>
               ))}
@@ -162,7 +162,7 @@ export default function ReceiptModal({
 
           <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="flex items-start justify-between text-[19px] font-black leading-tight">
+          <div className="flex items-start justify-between text-[19px] font-semibold leading-tight">
             <span>Bill {receiptData.billNumber}</span>
             <span className="text-right">
               {receiptData.tanggal} {receiptData.jam}
@@ -171,7 +171,7 @@ export default function ReceiptModal({
 
           <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="space-y-1.5 text-[19px] font-black leading-tight">
+          <div className="space-y-1.5 text-[19px] font-semibold leading-tight">
             <div className="flex items-end justify-between gap-3 pt-1">
               <span>Item x Qty</span>
               <span>Rate</span>
@@ -203,7 +203,7 @@ export default function ReceiptModal({
 
           <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="space-y-0.5 text-[20px] font-black leading-tight">
+          <div className="space-y-0.5 text-[20px] font-semibold leading-tight">
             <div className="flex justify-between gap-3">
               <span>Total pesanan</span>
               <span>{formatReceiptAmount(receiptSubtotal)}</span>
@@ -220,26 +220,26 @@ export default function ReceiptModal({
 
           <div className="my-2 border-t-2 border-dashed border-slate-700" />
 
-          <div className="pt-1.5 text-center text-[23px] font-black tracking-wide">
+          <div className="pt-1.5 text-center text-[23px] font-semibold tracking-wide">
             TERIMA KASIH
           </div>
 
           <div className="receipt-actions mt-6 grid grid-cols-1 gap-2 print:hidden">
             <button
               onClick={handleDownloadPng}
-              className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-200 transition-colors hover:bg-emerald-700"
+              className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition-colors hover:bg-emerald-700"
             >
               <Download size={16} /> Unduh PNG
             </button>
             <button
               onClick={handlePrint}
-              className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-200 transition-colors hover:bg-blue-700"
+              className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-200 transition-colors hover:bg-blue-700"
             >
               <Printer size={16} /> Cetak Thermal
             </button>
             <button
               onClick={onClose}
-              className="flex-1 rounded-xl bg-gray-100 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200"
+              className="flex-1 rounded-xl bg-gray-100 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
             >
               Tutup
             </button>

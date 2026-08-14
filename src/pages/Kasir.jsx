@@ -12,6 +12,7 @@ import {
   Tags,
   AlertCircle,
   ChevronDown,
+  ShoppingBag,
   Trash2,
 } from "lucide-react";
 import Snackbar from "@mui/joy/Snackbar";
@@ -408,25 +409,25 @@ const [uangDiterima, setUangDiterima] = useState("");
         onDownloadError={() => showNotif("Gagal membuat struk PNG.", "danger")}
       />
 
-      <div className="flex flex-col lg:flex-row gap-6 h-full min-h-0 flex-1">
+      <div className="flex flex-col lg:flex-row-reverse gap-6 h-full min-h-0 flex-1">
         {/* KOLOM KIRI: Form Kasir */}
         <div className="w-full min-h-125 lg:min-h-0 lg:w-[420px] shrink-0 bg-white dark:bg-darkMode p-3 md:p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex flex-col  overflow-y-auto">
           <div className="flex items-center gap-3 mb-8 text-blue-600 dark:text-blue-400">
             <ShoppingCart size={28} />
-            <h1 className="text-2xl font-black text-gray-800 dark:text-gray-100 tracking-tight">
+            <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 tracking-tight">
               Kasir Konter
             </h1>
           </div>
 
           <div className="space-y-6">
             <div className="relative">
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 Produk Terpilih
               </label>
               <div className="relative">
                 <input
                   type="text"
-                  className="w-full p-3 pl-11 pr-10 bg-slate-50 border border-slate-200 rounded-[6px] outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all font-light text-gray-700"
+                  className="w-full p-2 pl-11 pr-10 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all font-light text-gray-700"
                   placeholder="Ketik atau pilih dari katalog ➔"
                   value={searchTerm}
                   onChange={(e) => {
@@ -439,7 +440,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                 />
                 <Search
                   size={18}
-                  className="absolute left-4 top-4 text-gray-400"
+                  className="absolute left-4 top-3 text-gray-400"
                 />
                 {searchTerm && (
                   <button
@@ -479,7 +480,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                                 {Number(p.harga_jual).toLocaleString("id-ID")}
                               </div>
                               <div
-                                className={`text-[10px] font-black uppercase mt-0.5 ${p.stok > 0 ? "text-green-500" : "text-red-500"}`}
+                                className={`text-[10px] font-semibold uppercase mt-0.5 ${p.stok > 0 ? "text-green-500" : "text-red-500"}`}
                               >
                                 Sisa: {p.stok}
                               </div>
@@ -502,7 +503,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                   <span className="text-blue-800/70 font-semibold">
                     Harga Jual:
                   </span>
-                  <span className="font-black text-blue-700 text-lg">
+                  <span className="font-semibold text-blue-700 text-lg">
                     Rp {Number(product.harga_jual).toLocaleString("id-ID")}
                   </span>
                 </div>
@@ -525,14 +526,14 @@ const [uangDiterima, setUangDiterima] = useState("");
                 {selectedProductCartQty > 0 && (
                   <div className="flex justify-between items-center text-xs text-blue-800/70">
                     <span>Sudah di keranjang:</span>
-                    <span className="font-black">{selectedProductCartQty} Unit</span>
+                    <span className="font-semibold">{selectedProductCartQty} Unit</span>
                   </div>
                 )}
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-2">
                 Jumlah Item
               </label>
               <div className="flex items-center gap-3">
@@ -540,13 +541,13 @@ const [uangDiterima, setUangDiterima] = useState("");
                   type="button"
                   onClick={() => setJumlah(Math.max(1, jumlah - 1))}
                   disabled={!product || jumlah <= 1}
-                  className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white text-slate-600 dark:text-cardDark font-bold hover:bg-slate-200 disabled:opacity-50 flex items-center justify-center transition-colors"
+                  className="w-12 h-10 rounded-xl bg-slate-100 dark:bg-white text-slate-600 dark:text-cardDark font-bold hover:bg-slate-200 disabled:opacity-50 flex items-center justify-center transition-colors"
                 >
                   -
                 </button>
                 <input
                   type="number"
-                  className="flex-1 h-12 text-center border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-black text-lg text-gray-800 dark:text-fontDark transition-all"
+                  className="flex-1 h-10 text-center border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-lg text-gray-800 dark:text-fontDark transition-all"
                   value={jumlah}
                   onChange={(e) => setJumlah(Number(e.target.value))}
                   min="1"
@@ -573,26 +574,26 @@ const [uangDiterima, setUangDiterima] = useState("");
             <button
               onClick={handleAddToCart}
               disabled={loading || !product || selectedProductAvailable < 1}
-              className="w-full rounded-xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition-all hover:bg-slate-800 disabled:bg-slate-300 disabled:shadow-none"
+              className="w-full rounded-lg bg-slate-900 flex flex-row items-center justify-center py-3 gap-1 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition-all hover:bg-slate-800 disabled:bg-slate-300 disabled:shadow-none"
             >
-              Tambah ke Keranjang
+              <ShoppingBag size={18} className="" /> Tambah Keranjang
             </button>
 
             <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-borderDark dark:bg-cardDark">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ShoppingCart size={18} className="text-blue-600" />
-                  <h2 className="text-sm font-black text-slate-800 dark:text-fontDark">
+                  <h2 className="text-sm font-semibold text-slate-800 dark:text-fontDark">
                     Keranjang
                   </h2>
                 </div>
-                <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-black text-blue-700">
+                <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-semibold text-blue-700">
                   {totalCartQty} ITEM
                 </span>
               </div>
 
               {cartItems.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-center text-xs font-semibold text-slate-400">
+                <div className="rounded-lg border border-dashed border-slate-200 bg-white p-3 text-center text-xs font-semibold text-slate-400">
                   Belum ada produk di keranjang.
                 </div>
               ) : (
@@ -610,7 +611,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-black text-slate-800">
+                            <p className="truncate text-sm font-semibold text-slate-800">
                               {item.nama_produk}
                             </p>
                             <p className="mt-0.5 text-[11px] font-bold uppercase text-slate-400">
@@ -632,7 +633,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                               onClick={() =>
                                 updateCartQty(item.id_produk, item.jumlah - 1)
                               }
-                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-sm font-black text-slate-600 disabled:opacity-40"
+                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-sm font-semibold text-slate-600 disabled:opacity-40"
                               disabled={item.jumlah <= 1}
                             >
                               -
@@ -645,13 +646,13 @@ const [uangDiterima, setUangDiterima] = useState("");
                               onChange={(event) =>
                                 updateCartQty(item.id_produk, event.target.value)
                               }
-                              className="h-8 w-14 rounded-lg border border-slate-200 text-center text-sm font-black text-slate-800 outline-none focus:ring-2 focus:ring-blue-500"
+                              className="h-8 w-14 rounded-lg border border-slate-200 text-center text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button
                               onClick={() =>
                                 updateCartQty(item.id_produk, item.jumlah + 1)
                               }
-                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-sm font-black text-slate-600 disabled:opacity-40"
+                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-sm font-semibold text-slate-600 disabled:opacity-40"
                               disabled={item.jumlah >= maxQty}
                             >
                               +
@@ -661,7 +662,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                             <p className="text-[10px] font-bold text-slate-400">
                               Subtotal
                             </p>
-                            <p className="text-sm font-black text-blue-700">
+                            <p className="text-sm font-semibold text-blue-700">
                               {formatRupiah(item.total_harga)}
                             </p>
                           </div>
@@ -676,7 +677,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                 <span className="text-sm font-bold text-slate-500 dark:text-fontDark">
                   Total Keranjang
                 </span>
-                <span className="text-lg font-black text-blue-700">
+                <span className="text-lg font-semibold text-blue-700">
                   {formatRupiah(totalHarga)}
                 </span>
               </div>
@@ -684,7 +685,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                 <span className="text-sm font-bold text-slate-500 dark:text-fontDark">
                   Total Bayar
                 </span>
-                <span className="text-lg font-black text-green-700">
+                <span className="text-lg font-semibold text-green-700">
                   {formatRupiah(totalBayar)}
                 </span>
               </div>
@@ -695,7 +696,7 @@ const [uangDiterima, setUangDiterima] = useState("");
               {cartItems.length > 0 && (
                 <div className="order-t border-gray-100 space-y-4 animate-in fade-in">
                   <div>
-                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                       Ongkir
                     </label>
                     <div className="relative">
@@ -714,7 +715,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                       Metode Pembayaran
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -866,7 +867,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                   cartItems.length === 0 ||
                   (metodePembayaran === "Tunai" && uangDiterima < totalBayar)
                 }
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:bg-slate-300 disabled:shadow-none hover:-translate-y-0.5 active:translate-y-0"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:bg-slate-300 disabled:shadow-none hover:-translate-y-0.5 active:translate-y-0"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -880,7 +881,7 @@ const [uangDiterima, setUangDiterima] = useState("");
               <button
                 onClick={handleRusakClick}
                 disabled={loading || !product}
-                className="w-full bg-white border-2 border-red-100 hover:border-red-600 text-red-600 font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:border-red-100 hover:bg-red-50"
+                className="w-full bg-white border-2 border-red-100 hover:border-red-600 text-red-600 font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:border-red-100 hover:bg-red-50"
               >
                 <AlertOctagon size={18} /> Catat Barang Rusak (Loss)
               </button>
@@ -947,7 +948,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                           </div>
                         )}
                         {!isSelected && qtyInCart > 0 && (
-                          <div className="absolute top-3 right-3 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-black text-white shadow-sm">
+                          <div className="absolute top-3 right-3 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-semibold text-white shadow-sm">
                             x{qtyInCart}
                           </div>
                         )}
@@ -964,7 +965,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                             </h3>
                             <div className="flex items-center gap-1.5 mt-1.5">
                               <Tags size={12} className="text-gray-400" />
-                              <span className="text-[10px] font-black uppercase text-gray-500 dark:text-fontDark tracking-wider">
+                              <span className="text-[10px] font-semibold uppercase text-gray-500 dark:text-fontDark tracking-wider">
                                 {p.jenis_sparepart}
                               </span>
                             </div>
@@ -977,7 +978,7 @@ const [uangDiterima, setUangDiterima] = useState("");
                               Harga Jual
                             </p>
                             <p
-                              className={`font-black ${isSelected ? "text-blue-700 dark:text-fontDark" : "text-gray-800 dark:text-fontDark"}`}
+                              className={`font-semibold ${isSelected ? "text-blue-700 dark:text-fontDark" : "text-gray-800 dark:text-fontDark"}`}
                             >
                               Rp {Number(p.harga_jual).toLocaleString("id-ID")}
                             </p>

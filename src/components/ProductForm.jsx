@@ -48,7 +48,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
         className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden"
       >
         <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-800">
+          <h2 className="text-xl font-semibold text-gray-800">
             {initialData ? "Edit Produk" : "Tambah Produk Baru"}
           </h2>
           <button

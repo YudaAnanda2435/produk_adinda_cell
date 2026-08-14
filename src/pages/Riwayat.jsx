@@ -269,7 +269,7 @@ export default function Riwayat({
 
       <div className="flex-1 flex flex-col min-h-0 print:min-h-full! gap-6">
         <div className="flex flex-col md:flex-row justify-between  items-start md:items-center gap-4 print-hidden">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-fontDark flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-fontDark flex items-center gap-2">
             <Receipt className="text-blue-600" /> Riwayat Penjualan
           </h1>
 
@@ -279,7 +279,7 @@ export default function Riwayat({
                 setIsDateOpen(!isDateOpen);
                 setIsExportOpen(false);
               }}
-              className="flex-1 w-full md:w-fit md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-darkMode border border-gray-200 dark:border-borderDark rounded-xl px-4 py-2.5 shadow-sm hover:border-blue-500 dark:hover:border-borderDark hover:text-blue-600 dark:hover:text-fontDark transition-all text-sm font-bold text-gray-700 dark:text-fontDark"
+              className="flex-1 w-full md:w-fit md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-darkMode border border-gray-200 dark:border-borderDark rounded-xl px-4 py-2.5 shadow-sm hover:border-blue-500 dark:hover:border-borderDark hover:text-blue-600 dark:hover:text-fontDark transition-all text-sm font-semibold text-gray-700 dark:text-fontDark"
             >
               <Calendar
                 size={18}
@@ -299,11 +299,11 @@ export default function Riwayat({
                 <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b pb-3">
-                      <h3 className="font-bold text-gray-800">Filter Riwayat</h3>
+                      <h3 className="font-semibold text-gray-800">Filter Riwayat</h3>
                     </div>
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                           Mulai
                         </label>
                         <input
@@ -317,7 +317,7 @@ export default function Riwayat({
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                           Selesai
                         </label>
                         <input
@@ -335,7 +335,7 @@ export default function Riwayat({
                       onClick={() => {
                         setIsDateOpen(false);
                       }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors mt-2"
                     >
                       Terapkan
                     </button>
@@ -350,7 +350,7 @@ export default function Riwayat({
                   setIsExportOpen(!isExportOpen);
                   setIsDateOpen(false);
                 }}
-                className="w-full  flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2.5 shadow-sm transition-all text-sm font-bold"
+                className="w-full  flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2.5 shadow-sm transition-all text-sm font-semibold"
               >
                 <Download size={18} /> Laporan
               </button>
@@ -382,7 +382,7 @@ export default function Riwayat({
                 setIsExportOpen(false);
               }}
               disabled={isLoading || loading || filteredTransactions.length === 0}
-              className="flex-1 w-full md:w-fit md:flex-none flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+              className="flex-1 w-full md:w-fit md:flex-none flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
             >
               <Trash2 size={18} /> Hapus Semua
             </button>
@@ -394,7 +394,7 @@ export default function Riwayat({
           className="flex min-h-[58dvh] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-borderDark dark:bg-darkMode md:min-h-0"
         >
           <div className="hidden print:block p-6 border-b border-gray-200 mb-4">
-            <h1 className="text-2xl font-black text-gray-800 text-center">
+            <h1 className="text-2xl font-semibold text-gray-800 text-center">
               LAPORAN PENJUALAN KONTER
             </h1>
             <p className="text-center text-gray-500 mt-2 font-medium">
@@ -404,7 +404,7 @@ export default function Riwayat({
 
           <div className="min-h-0 flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
             <table className="w-full text-left dark:bg-cardDark border-collapse whitespace-nowrap print:whitespace-normal print:text-[10px]">
-              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-fontDark text-[10px] uppercase font-bold shadow-sm">
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-fontDark text-[10px] uppercase font-semibold shadow-sm">
                 <tr>
                   <th className="p-4 border-b text-start">Waktu</th>
                   <th className="p-4 border-b text-start">Produk</th>
@@ -445,17 +445,17 @@ export default function Riwayat({
                         })}
                       </div>
                     </td>
-                    <td className="p-4 font-bold text-sm text-gray-800 dark:text-fontDark">
+                    <td className="p-4 font-semibold text-sm text-gray-800 dark:text-fontDark">
                       {t.nama_produk}
                     </td>
                     <td className="p-4 text-start text-sm ">{t.jumlah}</td>
                     <td className="p-4 text-start font-semibold text-sm">
                       {formatRupiah(t.total_harga)}
                     </td>
-                    <td className="p-4 text-start font-bold text-sm text-green-600">
+                    <td className="p-4 text-start font-semibold text-sm text-green-600">
                       +{formatRupiah(t.laba)}
                     </td>
-                    <td className="p-4 text-sm font-bold text-gray-600 dark:text-fontDark">
+                    <td className="p-4 text-sm font-semibold text-gray-600 dark:text-fontDark">
                       {t.metode_pembayaran || "-"}
                     </td>
                     <td className="p-4 text-sm text-gray-600 dark:text-fontDark max-w-[150px] truncate">
@@ -489,17 +489,17 @@ export default function Riwayat({
                   <tr>
                     <td
                       colSpan="3"
-                      className="p-4 text-right font-black text-gray-700 dark:text-fontDark uppercase text-xs tracking-wider"
+                      className="p-4 text-right font-semibold text-gray-700 dark:text-fontDark uppercase text-xs tracking-wider"
                     >
                       Total Keseluruhan
                     </td>
-                    <td className="p-4 text-center font-black text-sm text-gray-800 dark:text-fontDark">
+                    <td className="p-4 text-center font-semibold text-sm text-gray-800 dark:text-fontDark">
                       {totalQty}
                     </td>
-                    <td className="p-4 text-right font-black text-sm text-blue-700 dark:text-blue-300">
+                    <td className="p-4 text-right font-semibold text-sm text-blue-700 dark:text-blue-300">
                       {formatRupiah(totalOmzet)}
                     </td>
-                    <td className="p-4 text-right font-black text-sm text-green-700 dark:text-green-300">
+                    <td className="p-4 text-right font-semibold text-sm text-green-700 dark:text-green-300">
                       +{formatRupiah(totalLaba)}
                     </td>
                     <td className="p-4 print-hidden" colSpan="2"></td>
@@ -513,7 +513,7 @@ export default function Riwayat({
             <div className="flex justify-center border-t border-gray-100 p-4 print-hidden">
               <button
                 onClick={() => setVisibleCount((count) => count + 50)}
-                className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
               >
                 Tampilkan 50 Transaksi Lagi
               </button>
@@ -522,18 +522,18 @@ export default function Riwayat({
 
           <div className="hidden print:flex justify-end gap-10 p-6 mt-4 border-t border-gray-200">
             <div className="text-right">
-              <p className="text-sm text-gray-500 font-bold uppercase mb-1">
+              <p className="text-sm text-gray-500 font-semibold uppercase mb-1">
                 Total Omzet
               </p>
-              <p className="text-xl font-black text-blue-600">
+              <p className="text-xl font-semibold text-blue-600">
                 {formatRupiah(totalOmzet)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500 font-bold uppercase mb-1">
+              <p className="text-sm text-gray-500 font-semibold uppercase mb-1">
                 Total Laba
               </p>
-              <p className="text-xl font-black text-green-600">
+              <p className="text-xl font-semibold text-green-600">
                 {formatRupiah(totalLaba)}
               </p>
             </div>

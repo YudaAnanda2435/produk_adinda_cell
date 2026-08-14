@@ -100,22 +100,11 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
 
-  // --- TAMBAHAN: STATE UNTUK DARK MODE ---
-  const [isDarkMode, setIsDarkMode] = useState(
-    () => localStorage.getItem("theme") === "dark",
-  );
-
-  // --- TAMBAHAN: EFEK UNTUK MENERAPKAN CLASS KE HTML ---
+  // Efek untuk memastikan tema default adalah terang (putih)
   useEffect(() => {
-    const html = document.documentElement;
-    if (isDarkMode) {
-      html.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      html.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDarkMode]);
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }, []);
 
   const fetchProducts = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsProductsLoading(true);
@@ -362,9 +351,7 @@ export default function App() {
     });
   }, []);
 
-  const handleToggleDarkMode = useCallback(() => {
-    setIsDarkMode((currentMode) => !currentMode);
-  }, []);
+
 
   const handleToggleMobileMenu = useCallback(() => {
     setIsMobileMenuOpen((isOpen) => !isOpen);
@@ -387,7 +374,7 @@ export default function App() {
     return (
       <Suspense
         fallback={
-          <div className="min-h-screen bg-slate-900 flex items-center justify-center text-sm font-bold text-white">
+          <div className="min-h-screen bg-slate-900 flex items-center justify-center text-sm font-semibold text-white">
             Memuat halaman masuk...
           </div>
         }
@@ -405,10 +392,8 @@ export default function App() {
         activeTab={activeTab}
         userRole={userRole}
         userName={userName}
-        isDarkMode={isDarkMode}
         isMobileMenuOpen={isMobileMenuOpen}
         isServiceMenuOpen={isServiceMenuOpen}
-        onToggleDarkMode={handleToggleDarkMode}
         onToggleMobileMenu={handleToggleMobileMenu}
         onCloseMobileMenu={handleCloseMobileMenu}
         onToggleServiceMenu={handleToggleServiceMenu}

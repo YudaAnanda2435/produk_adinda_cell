@@ -68,7 +68,7 @@ export default function ConfirmModal({
             <input
               value={typedPhrase}
               onChange={(event) => setTypedPhrase(event.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-800 outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-100 dark:border-borderDark dark:bg-cardDark dark:text-fontDark"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-100 dark:border-borderDark dark:bg-cardDark dark:text-fontDark"
               autoComplete="off"
               autoFocus
             />
@@ -80,7 +80,7 @@ export default function ConfirmModal({
             variant="plain"
             color="neutral"
             onClick={handleClose}
-            className="font-bold dark:text-fontDark! dark:hover:text-darkMode!"
+            className="font-semibold dark:text-fontDark! dark:hover:text-darkMode!"
           >
             {cancelText}
           </Button>
@@ -89,7 +89,7 @@ export default function ConfirmModal({
             color={color}
             onClick={handleConfirm}
             disabled={isConfirmDisabled}
-            className="font-bold shadow-sm"
+            className="font-semibold shadow-sm"
           >
             {confirmText}
           </Button>

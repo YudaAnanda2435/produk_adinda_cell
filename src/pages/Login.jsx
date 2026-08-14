@@ -64,11 +64,11 @@ export default function Login({ onLoginSuccess }) {
           <div className="relative z-10 p-8 md:p-16 flex flex-col items-start justify-center h-full w-full mx-auto pb-16 md:pb-24">
             <div className="flex items-center gap-2 bg-blue-600/30 backdrop-blur-md px-3 py-1.5 rounded-full mb-4 border border-blue-400/30">
               <CheckCircle2 size={14} className="text-blue-300" />
-              <span className="text-xs font-bold text-blue-100 tracking-wider uppercase">
+              <span className="text-xs font-semibold text-blue-100 tracking-wider uppercase">
                 Sistem POS Terpadu
               </span>
             </div>
-            <h2 className="text-2xl md:text-4xl font-black text-white mb-3 leading-tight">
+            <h2 className="text-2xl md:text-4xl font-semibold text-white mb-3 leading-tight">
               Kendalikan Konter Anda!
             </h2>
             <p className="text-sm md:text-base text-blue-100 font-medium leading-relaxed opacity-90">
@@ -86,7 +86,7 @@ export default function Login({ onLoginSuccess }) {
               <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-4 w-fit rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center mx-auto mb-3 md:mb-5 transform rotate-3 hover:rotate-6 transition-transform">
                 <Lock className="text-white" />
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
+              <h1 className="text-2xl md:text-3xl font-semibold text-slate-800 tracking-tight">
                 Akses Masuk
               </h1>
               <p className="text-sm text-slate-500 mt-2 font-medium">
@@ -101,7 +101,7 @@ export default function Login({ onLoginSuccess }) {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   Username
                 </label>
                 <div className="relative flex flex-row items-center group">
@@ -122,7 +122,7 @@ export default function Login({ onLoginSuccess }) {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   Password
                 </label>
                 <div className="relative group">
@@ -145,7 +145,7 @@ export default function Login({ onLoginSuccess }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-[14px] md:text-[16px] hover:bg-blue-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/30 disabled:bg-slate-300 disabled:shadow-none hover:-translate-y-0.5 active:translate-y-0"
+                className="w-full bg-blue-600 text-[14px] md:text-[16px] hover:bg-blue-700 text-white font-semibold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/30 disabled:bg-slate-300 disabled:shadow-none hover:-translate-y-0.5 active:translate-y-0"
               >
                 {loading ? (
                   <>

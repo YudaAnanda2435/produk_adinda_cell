@@ -203,7 +203,11 @@ Fitur struk:
 - Tombol tutup struk.
 - Canvas generator untuk membuat file PNG struk.
 - Pengaturan CSS print khusus ukuran 58mm.
-
+- **Integrasi Printer Thermal Fisik:**
+  - Mendukung cetak langsung ke printer thermal (USB/Bluetooth) di Windows/Mac menggunakan **QZ Tray**.
+  - Mengirim raw **ESC/POS commands** secara langsung (tanpa melalui driver UI).
+  - Merender logo menggunakan perintah raster bitmap (`GS v 0`) agar sangat kompatibel dengan berbagai printer thermal generik/murah.
+  - Pilihan printer disimpan otomatis di browser agar tidak perlu memilih ulang setiap kali cetak.
 ## Manajemen Gudang / Data Stok Produk
 
 Fitur produk:
@@ -398,6 +402,10 @@ Endpoint dan action yang digunakan:
 - POST `delete_service_transaction` untuk hapus satu transaksi service.
 - POST `delete_all_service_transactions` untuk hapus riwayat service per periode.
 
+### Ketahanan API (Resilience)
+
+- Terdapat fitur **Auto-Retry** bawaan di dalam *fetcher* (`fetchJsonWithRetry`).
+- Fitur ini akan otomatis mencoba ulang koneksi (maksimal 3 kali dengan jeda *exponential backoff*) jika Google Apps Script menolak *request* akibat *Concurrent Execution Limit* (saat banyak perangkat mengedit data bersamaan) atau gangguan koneksi sesaat.
 ## Cache & Penyimpanan Lokal
 
 Data yang disimpan di localStorage:

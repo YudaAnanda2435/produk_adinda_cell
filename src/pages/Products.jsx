@@ -6,6 +6,7 @@ import {
   Edit,
   CheckCircle2,
   Trash2,
+  BroomSparkles,
   X,
   DollarSign,
   AlertCircle,
@@ -110,12 +111,12 @@ const ProductTable = ({
                   <td className="p-4">
                     <div className="flex items-center">
                       <span
-                        className={`font-bold ${item.stok < 6 ? "text-red-600" : "text-green-600"}`}
+                        className={`font-semibold ${item.stok < 6 ? "text-red-600" : "text-green-600"}`}
                       >
                         {item.stok}
                       </span>
                       {item.stok < 6 && (
-                        <span className="ml-2 flex items-center text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full uppercase tracking-wider font-bold">
+                        <span className="ml-2 flex items-center text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full uppercase tracking-wider font-semibold">
                           <AlertTriangle size={10} className="mr-1" /> Menipis
                         </span>
                       )}
@@ -200,7 +201,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[60vh] md:max-h-[90vh]"
       >
         <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
-          <h2 className="text-xl font-bold text-gray-800">
+          <h2 className="text-xl font-semibold text-gray-800">
             {initialData ? "Edit Data Produk" : "Tambah Produk Baru"}
           </h2>
           <button
@@ -214,7 +215,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 z-50 overflow-y-auto flex-1">
           <div>
-            <label className="block text-[16px] font-bold text-gray-700 mb-1.5">
+            <label className="block text-[16px] font-semibold text-gray-700 mb-1.5">
               Merk HP
             </label>
             <input
@@ -227,7 +228,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Model / Tipe HP
             </label>
             <input
@@ -240,7 +241,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Jenis Sparepart
             </label>
             <select
@@ -265,7 +266,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Jumlah Stok
             </label>
             <input
@@ -274,12 +275,12 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
               min="0"
               value={formData.stok}
               onChange={handleChange}
-              className="w-full text-[16px] p-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-blue-600 transition-all"
+              className="w-full text-[16px] p-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-blue-600 transition-all"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Harga Beli (Rp)
             </label>
             <input
@@ -293,7 +294,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Harga Jual (Rp)
             </label>
             <input
@@ -307,7 +308,7 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Keterangan Tambahan
             </label>
             <input
@@ -325,10 +326,10 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
                 <DollarSign size={18} className="text-blue-600" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-blue-500 tracking-wider">
+                <span className="text-[10px] uppercase font-semibold text-blue-500 tracking-wider">
                   Estimasi Laba Kotor per Item
                 </span>
-                <span className="text-lg font-black text-blue-700">
+                <span className="text-lg font-semibold text-blue-700">
                   {formatRupiah(keuntungan)}
                 </span>
               </div>
@@ -340,13 +341,13 @@ const ProductForm = ({ onSubmit, initialData, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 hover:border-gray-300 font-bold text-sm transition-all shadow-sm"
+            className="px-5 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 hover:border-gray-300 font-semibold text-sm transition-all shadow-sm"
           >
             Batal
           </button>
           <button
             type="submit"
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm transition-all shadow-sm shadow-blue-200"
+            className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold text-sm transition-all shadow-sm shadow-blue-200"
           >
             Simpan Produk
           </button>
@@ -368,6 +369,7 @@ export default function Products({
   const [filterJenis, setFilterJenis] = useState("");
 
   const [deleteId, setDeleteId] = useState(null);
+  const [duplicateMergeData, setDuplicateMergeData] = useState(null);
 
   // State untuk Loading Modal
   const [loading, setLoading] = useState(false);
@@ -422,23 +424,151 @@ export default function Products({
         fetchProducts(true); // Silent refresh
       }
     } else {
-      // OPTIMISTIC UPDATE: Tambah di layar langsung
-      const newId = new Date().getTime().toString(); // Buat ID sementara
-      const newData = { ...data, id: newId };
-      setProducts([newData, ...products]);
+      // CEK DUPLIKAT: Apakah produk ini sudah ada?
+      const existingProduct = products.find(
+        (p) =>
+          String(p.merk || "").trim().toLowerCase() === String(data.merk || "").trim().toLowerCase() &&
+          String(p.model || "").trim().toLowerCase() === String(data.model || "").trim().toLowerCase() &&
+          String(p.jenis_sparepart || "").trim().toLowerCase() === String(data.jenis_sparepart || "").trim().toLowerCase()
+      );
 
-      // Kirim ke server di latar belakang
-      const res = await api.addProduct(newData);
-      if (res && res.status === "error") {
-        setProducts(previousProducts); // Hapus jika gagal
-        showNotif("Gagal menambah data ke server.", "danger");
+      if (existingProduct) {
+        setDuplicateMergeData({ existingProduct, data });
+        setLoading(false); // Matikan loading sementara menunggu modal konfirmasi
+        return;
       } else {
-        showNotif("Produk baru berhasil ditambahkan!", "success");
-        fetchProducts(true); // Silent refresh
+        // OPTIMISTIC UPDATE: Tambah di layar langsung
+        const newId = new Date().getTime().toString(); // Buat ID sementara
+        const newData = { ...data, id: newId };
+        setProducts([newData, ...products]);
+
+        // Kirim ke server di latar belakang
+        const res = await api.addProduct(newData);
+        if (res && res.status === "error") {
+          setProducts(previousProducts); // Hapus jika gagal
+          showNotif("Gagal menambah data ke server.", "danger");
+        } else {
+          showNotif("Produk baru berhasil ditambahkan!", "success");
+          fetchProducts(true); // Silent refresh
+        }
       }
     }
 
     setLoading(false); // Tutup modal loading
+  };
+
+  const executeMergeDuplicate = async () => {
+    if (!duplicateMergeData) return;
+    const { existingProduct, data } = duplicateMergeData;
+    
+    setDuplicateMergeData(null);
+    setLoadingMessage("Menggabungkan stok produk...");
+    setLoading(true);
+    
+    const previousProducts = [...products];
+
+    // Gabungkan stok ke produk yang sudah ada
+    const updatedData = {
+      ...existingProduct,
+      stok: Number(existingProduct.stok) + Number(data.stok),
+      harga_beli: data.harga_beli,
+      harga_jual: data.harga_jual,
+      keterangan: data.keterangan || existingProduct.keterangan
+    };
+
+    setProducts(
+      products.map((p) => (p.id === existingProduct.id ? updatedData : p))
+    );
+
+    const res = await api.updateProduct(updatedData);
+    if (res && res.status === "error") {
+      setProducts(previousProducts);
+      showNotif("Gagal menggabungkan stok produk.", "danger");
+    } else {
+      showNotif("Produk sudah ada, stok berhasil ditambahkan!", "success");
+      fetchProducts(true);
+    }
+    
+    setLoading(false);
+  };
+
+  const handleMergeDuplicates = async () => {
+    // Kelompokkan produk berdasarkan merk + model + jenis
+    const groups = {};
+    products.forEach((p) => {
+      const key = `${p.merk}-${p.model}-${p.jenis_sparepart}`.toLowerCase().trim();
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(p);
+    });
+
+    const duplicateGroups = Object.values(groups).filter((g) => g.length > 1);
+
+    if (duplicateGroups.length === 0) {
+      showNotif("Tidak ditemukan produk duplikat di sistem.", "success");
+      return;
+    }
+
+    const totalDups = duplicateGroups.reduce((sum, g) => sum + (g.length - 1), 0);
+    const confirm = window.confirm(
+      `Ditemukan ${duplicateGroups.length} macam produk duplikat (total ${totalDups} baris berlebih).\n\nSistem akan OTOMATIS MENJUMLAHKAN stoknya dan menghapus baris yang ganda.\n\nLanjutkan merapikan?`
+    );
+    if (!confirm) return;
+
+    setLoadingMessage("Merapikan duplikat secara berurutan, mohon tunggu (membutuhkan waktu)...");
+    setLoading(true);
+
+    // OPTIMISTIC UPDATE UI LANSUNG SEBELUM HIT API
+    const newProductsList = [];
+    duplicateGroups.forEach(group => {
+      const totalStok = group.reduce((sum, p) => sum + Number(p.stok || 0), 0);
+      newProductsList.push({ ...group[0], stok: totalStok });
+    });
+    
+    // Tambahkan produk yang tidak duplikat
+    const nonDuplicates = products.filter(p => {
+      const key = `${p.merk}-${p.model}-${p.jenis_sparepart}`.toLowerCase().trim();
+      return groups[key].length === 1;
+    });
+    
+    // Set tampilan langsung berubah
+    setProducts([...newProductsList, ...nonDuplicates]);
+
+    let failed = 0;
+    
+    for (const group of duplicateGroups) {
+      const mainProduct = group[0];
+      const duplicates = group.slice(1);
+      
+      const totalStok = group.reduce((sum, p) => sum + Number(p.stok || 0), 0);
+      
+      // EKSEKUSI HAPUS DULUAN
+      // Untuk mencegah Google Sheets menimpa hasil update, kita hapus dulu baris berlebih
+      for (const dup of duplicates) {
+        await api.deleteProduct(dup.id);
+        // Jeda 1.5 detik per hapus untuk mencegah race condition / limitasi Google
+        await new Promise(r => setTimeout(r, 1500)); 
+      }
+
+      // UPDATE TERAKHIR
+      // Dengan mengupdate terakhir, state akhir yang disimpan Google adalah stok gabungan
+      const updatedMain = { ...mainProduct, stok: totalStok };
+      const resUpdate = await api.updateProduct(updatedMain);
+      await new Promise(r => setTimeout(r, 1500));
+
+      if (resUpdate && resUpdate.status === "error") {
+        failed++;
+      }
+    }
+
+    setLoading(false);
+    if (failed > 0) {
+      showNotif(`Selesai, tapi gagal memproses beberapa operasi di server.`, "warning");
+    } else {
+      showNotif("Semua data duplikat berhasil dirapikan!", "success");
+    }
+    
+    // Refresh diam-diam untuk memastikan sinkron dengan server
+    fetchProducts(true);
   };
 
   const executeDelete = async () => {
@@ -485,15 +615,23 @@ export default function Products({
   return (
     <div className="flex-1 flex flex-col min-h-0 gap-6">
       <div className="shrink-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-fontDark flex items-center gap-2">
+        <h1 className="text-2xl font-semibold text-gray-800 dark:text-fontDark flex items-center gap-2">
           Manajemen Gudang
         </h1>
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all font-bold text-sm w-full sm:w-auto justify-center"
-        >
-          <Plus size={18} className="mr-2" /> Tambah Suku Cadang
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleMergeDuplicates}
+            className="w-fit flex items-center px-4 gap-1 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all font-semibold text-sm justify-center"
+          >
+            <BroomSparkles size={18} className="" /> Rapikan Duplikat
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className=" flex items-center px-4 py-2.5 gap-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all font-semibold text-sm justify-center"
+          >
+            <Plus size={18} className="" /> Tambah
+          </button>
+        </div>
       </div>
 
       <div className="shrink-0 bg-white dark:bg-darkMode p-4 rounded-xl shadow-sm border border-gray-100 dark:border-borderDark flex flex-col sm:flex-row gap-3">
@@ -526,7 +664,7 @@ export default function Products({
             onChange={(e) => {
               setFilterJenis(e.currentTarget.value);
             }}
-            className="w-full px-3 py-3! border bg-white border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-gray-600 transition-all cursor-pointer"
+            className="w-full px-3 py-3! border bg-white border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-600 transition-all cursor-pointer"
           >
             <option value="">Semua Kategori Sparepart</option>
             <option value="LCD">LCD</option>
@@ -559,6 +697,22 @@ export default function Products({
           onCancel={() => setIsFormOpen(false)}
         />
       )}
+
+      {/* MODAL KONFIRMASI DUPLIKAT STOK */}
+      <ConfirmModal
+        open={!!duplicateMergeData}
+        onClose={() => setDuplicateMergeData(null)}
+        onConfirm={executeMergeDuplicate}
+        title="Produk Sudah Terdaftar"
+        message={
+          duplicateMergeData
+            ? `Produk ${duplicateMergeData.data.merk} ${duplicateMergeData.data.model} (${duplicateMergeData.data.jenis_sparepart}) sudah ada di gudang. Apakah Anda ingin menambahkan stok barunya (+${duplicateMergeData.data.stok}) ke data produk tersebut?`
+            : ""
+        }
+        confirmText="Gabungkan Stok"
+        cancelText="Batal"
+        color="primary"
+      />
 
       {/* MODAL KONFIRMASI HAPUS */}
       <ConfirmModal

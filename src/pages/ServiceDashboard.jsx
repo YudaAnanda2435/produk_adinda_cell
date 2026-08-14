@@ -45,10 +45,10 @@ const DashboardCard = ({ title, value, icon, colorClass, subtitle }) => (
   <div className="bg-white dark:bg-darkMode p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-borderDark flex items-center space-x-4 transition-all hover:shadow-md">
     <div className={`p-4 rounded-xl ${colorClass} shadow-sm`}>{icon}</div>
     <div className="min-w-0">
-      <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-100 font-bold">
+      <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-100 font-semibold">
         {title}
       </p>
-      <h3 className="text-[16px] font-bold text-gray-800 dark:text-gray-100 truncate">
+      <h3 className="text-[16px] font-semibold text-gray-800 dark:text-gray-100 truncate">
         {value}
       </h3>
       {subtitle && (
@@ -122,7 +122,7 @@ export default function ServiceDashboard({
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-fontDark flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-fontDark flex items-center gap-2">
             <Wrench className="text-blue-600" /> Dashboard Service
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -133,7 +133,7 @@ export default function ServiceDashboard({
         <div className="relative z-20">
           <button
             onClick={() => setIsDateOpen(!isDateOpen)}
-            className="flex items-center gap-2 bg-white dark:bg-darkMode border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 shadow-sm hover:border-blue-500 dark:hover:border-blue-200 transition-all text-sm font-bold text-gray-700 dark:text-fontDark w-full md:w-auto justify-center"
+            className="flex items-center gap-2 bg-white dark:bg-darkMode border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 shadow-sm hover:border-blue-500 dark:hover:border-blue-200 transition-all text-sm font-semibold text-gray-700 dark:text-fontDark w-full md:w-auto justify-center"
           >
             <Calendar
               size={18}
@@ -152,12 +152,12 @@ export default function ServiceDashboard({
               />
               <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-darkMode border border-gray-200 dark:border-borderDark rounded-2xl shadow-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="space-y-4">
-                  <h3 className="font-bold text-gray-800 dark:text-fontDark border-b border-gray-100 dark:border-borderDark pb-3">
+                  <h3 className="font-semibold text-gray-800 dark:text-fontDark border-b border-gray-100 dark:border-borderDark pb-3">
                     Pilih Rentang Waktu
                   </h3>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-[10px] font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
+                      <label className="block text-[10px] font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
                         Tanggal Mulai
                       </label>
                       <input
@@ -168,7 +168,7 @@ export default function ServiceDashboard({
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
+                      <label className="block text-[10px] font-semibold text-gray-500 dark:text-fontDark uppercase tracking-wider mb-1.5">
                         Tanggal Selesai
                       </label>
                       <input
@@ -181,7 +181,7 @@ export default function ServiceDashboard({
                   </div>
                   <button
                     onClick={() => setIsDateOpen(false)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors mt-2"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors mt-2"
                   >
                     Terapkan Filter
                   </button>
@@ -225,7 +225,7 @@ export default function ServiceDashboard({
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
         <div className="xl:col-span-2 bg-white dark:bg-darkMode p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-borderDark flex flex-col min-h-[350px]">
-          <h3 className="text-sm font-bold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4">
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4">
             Grafik Service ({periodeLabel})
           </h3>
           <div className="flex-1 bg-white dark:bg-cardDark rounded-xl overflow-hidden p-2">
@@ -314,7 +314,7 @@ export default function ServiceDashboard({
         </div>
 
         <div className="bg-white dark:bg-darkMode p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-borderDark flex max-h-[52dvh] min-h-[350px] flex-col overflow-hidden md:max-h-[420px]">
-          <h3 className="text-sm font-bold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4">
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-100 uppercase tracking-wider mb-4">
             Service Terbaru
           </h3>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch]">
@@ -327,14 +327,14 @@ export default function ServiceDashboard({
                   >
                     <div className="flex justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="font-black text-sm text-gray-800 dark:text-fontDark truncate">
+                        <p className="font-semibold text-sm text-gray-800 dark:text-fontDark truncate">
                           {service.pelanggan || "-"}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-300 truncate">
                           {service.perangkat || "-"}
                         </p>
                       </div>
-                      <p className="shrink-0 text-xs font-black text-green-600">
+                      <p className="shrink-0 text-xs font-semibold text-green-600">
                         {formatRupiah(getServiceLaba(service))}
                       </p>
                     </div>

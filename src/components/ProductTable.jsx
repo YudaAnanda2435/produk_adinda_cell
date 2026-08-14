@@ -47,12 +47,12 @@ const ProductTable = ({ products, onEdit, onDelete }) => (
                 <td className="p-4">
                   <div className="flex items-center">
                     <span
-                      className={`font-bold ${item.stok < 3 ? "text-red-600" : "text-green-600"}`}
+                      className={`font-semibold ${item.stok < 3 ? "text-red-600" : "text-green-600"}`}
                     >
                       {item.stok}
                     </span>
                     {item.stok < 3 && (
-                      <span className="ml-2 flex items-center text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full uppercase tracking-wider font-bold">
+                      <span className="ml-2 flex items-center text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full uppercase tracking-wider font-semibold">
                         <AlertTriangle size={10} className="mr-1" /> Menipis
                       </span>
                     )}
